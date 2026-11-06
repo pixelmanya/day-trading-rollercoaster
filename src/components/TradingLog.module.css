@@ -9,15 +9,16 @@
   grid-column: 1 / -1;
 }
 
-/* Desktop: summary on the left (sticky), trades on the right */
+/* Desktop: two equal halves (summary sticky on the left, trades on the right), centered */
 @media (width >= 1024px) {
   .page {
     display: grid;
-    grid-template-columns: minmax(0, var(--summary-column)) minmax(0, 1fr);
-    gap: var(--space-28);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--page-gutter-wide);
     align-items: start;
     max-inline-size: var(--content-max-wide);
     padding-block: var(--space-28);
+    padding-inline: var(--page-gutter-wide);
   }
 
   .summaryColumn {

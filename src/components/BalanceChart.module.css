@@ -5,3 +5,10 @@
   block-size: 150px;
   margin-block-start: var(--space-14);
 }
+
+/* Desktop: the chart spans half the window, so it gets more height to keep its shape */
+@media (width >= 1024px) {
+  .chart {
+    block-size: var(--chart-height-wide);
+  }
+}
