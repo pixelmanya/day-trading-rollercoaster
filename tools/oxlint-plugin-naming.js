@@ -108,6 +108,7 @@ const verbs = new Set([
   'did',
   'dispatch',
   'download',
+  'draw',
   'encode',
   'ensure',
   'export',

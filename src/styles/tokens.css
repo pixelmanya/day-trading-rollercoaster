@@ -107,6 +107,8 @@
 
   /* Elevation and motion */
   --shadow-fab: 0 8px 24px -8px var(--line);
+  --shadow-chip: 0 1px 3px rgb(16 22 32 / 12%);
+  --shadow-tooltip: 0 8px 24px -6px rgb(16 22 32 / 25%);
   --duration-sheet: 0.22s;
 
   /* Hover feedback on pointer devices */
@@ -144,5 +146,6 @@
     --field: #1f2836;
     --scrim: rgb(0 0 0 / 60%);
     --on-accent: #0f141c;
+    --shadow-tooltip: 0 8px 24px -6px rgb(0 0 0 / 55%);
   }
 }

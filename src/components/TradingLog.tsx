@@ -60,7 +60,7 @@ export function TradingLog({
           </div>
         )}
         <div className={styles.summaryColumn}>
-          <Hero summary={summary} start={settings.start} />
+          <Hero summary={summary} start={settings.start} today={today} />
           <StatsGrid summary={summary} />
         </div>
         <div className={styles.trades}>

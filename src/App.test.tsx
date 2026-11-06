@@ -156,6 +156,31 @@ describe('App', () => {
     expect(save).toHaveBeenCalledTimes(2)
   })
 
+  test('loads demo data and explores the chart by range and keyboard', async () => {
+    const user = userEvent.setup()
+    const { storage } = createFakeStorage()
+
+    render(<App storage={storage} />)
+    await user.click(await screen.findByRole('button', { name: 'Settings' }))
+    await user.click(getSheet().getByRole('button', { name: 'Load demo data' }))
+    await user.click(getSheet().getByRole('button', { name: 'Tap again to replace your log' }))
+
+    expect(screen.getByRole('region', { name: 'Closed trades' }).textContent).toMatch(/60/)
+
+    await user.click(screen.getByRole('button', { name: '1D' }))
+
+    expect(screen.getByRole('button', { name: '1D' }).getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByText('today')).toBeTruthy()
+
+    const chart = screen.getByRole('slider', { name: 'Balance after each closed trade' })
+
+    chart.focus()
+    await user.keyboard('{ArrowLeft}')
+
+    expect(chart.getAttribute('aria-valuetext')).toMatch(/balance/)
+    expect(screen.getByText(/^Balance \d/)).toBeTruthy()
+  })
+
   test('never saves over data it could not read', async () => {
     const loadError = createAppError('loadFailed', 'Couldn’t read your saved log.')
     const save = mocking.fn<StorageAdapter['save']>()

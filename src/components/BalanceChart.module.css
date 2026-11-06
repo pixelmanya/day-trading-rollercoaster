@@ -1,9 +1,16 @@
+.chartArea {
+  position: relative;
+  margin-block-start: var(--space-14);
+  border-radius: var(--radius-6);
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+
 .chart {
   display: block;
   overflow: visible;
   inline-size: 100%;
   block-size: 150px;
-  margin-block-start: var(--space-14);
 }
 
 .baseline {
@@ -21,7 +28,13 @@
 
 /* The line and its area draw in from left to right */
 .reveal {
+  transition: opacity var(--duration-base) var(--ease-out);
   animation: reveal var(--duration-draw) var(--ease-out);
+}
+
+/* While a point is hovered, the rest steps back so the trade stands out */
+.dimmed {
+  opacity: 0.45;
 }
 
 .endPoint {
@@ -38,6 +51,36 @@
   stroke-linecap: round;
   opacity: 0;
   animation: pulse var(--duration-pulse) var(--ease-out) var(--duration-draw) infinite;
+}
+
+.guide {
+  stroke: var(--muted);
+  stroke-width: 1;
+}
+
+.highlight {
+  fill: none;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: fade-in var(--duration-fast) var(--ease-out);
+}
+
+.hoverPoint {
+  stroke-width: 12;
+  stroke-linecap: round;
+}
+
+.gain {
+  stroke: var(--gain);
+}
+
+.loss {
+  stroke: var(--loss);
+}
+
+.neutral {
+  stroke: var(--line);
 }
 
 @keyframes reveal {
@@ -71,11 +114,16 @@
 
 /* Desktop: the chart fills whatever height the hero panel leaves */
 @media (width >= 1024px) {
-  .chart {
+  .chartArea {
+    display: flex;
     flex: 1;
     align-self: stretch;
-    block-size: auto;
     min-block-size: var(--chart-min-wide);
     margin-block-start: var(--space-28);
+  }
+
+  .chart {
+    flex: 1;
+    block-size: auto;
   }
 }
