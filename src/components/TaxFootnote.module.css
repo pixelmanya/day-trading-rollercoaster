@@ -1,0 +1,6 @@
+.footnote {
+  margin-block-start: var(--space-22);
+  padding-inline: var(--space-2);
+  font-size: var(--text-12-5);
+  color: var(--muted);
+}

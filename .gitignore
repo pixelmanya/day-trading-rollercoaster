@@ -28,3 +28,4 @@ dist-ssr
 .nitro
 .tanstack
 coverage
+*.d.css.ts

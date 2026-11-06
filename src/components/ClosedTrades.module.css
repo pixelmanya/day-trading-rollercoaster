@@ -1,0 +1,49 @@
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2) var(--space-12);
+  inline-size: 100%;
+  padding-block: var(--space-14);
+  padding-inline: var(--space-16);
+  text-align: start;
+  background: none;
+  border: 0;
+  border-block-start: var(--hairline) solid var(--grid);
+
+  &:first-child {
+    border-block-start: 0;
+  }
+}
+
+.ticker {
+  display: block;
+  font-size: var(--text-16);
+  font-weight: var(--weight-bold);
+}
+
+.detail {
+  display: block;
+  font-size: var(--text-13);
+  font-weight: var(--weight-regular);
+  color: var(--muted);
+}
+
+.returnRatio {
+  display: block;
+  font-size: var(--text-13);
+  color: var(--muted);
+}
+
+.amount {
+  font-size: var(--text-16);
+  font-weight: var(--weight-bold);
+  text-align: end;
+}
+
+.gain {
+  color: var(--gain);
+}
+
+.loss {
+  color: var(--loss);
+}

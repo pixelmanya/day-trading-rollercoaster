@@ -81,6 +81,7 @@
   --hairline: 1px;
   --border-input: 1.5px;
   --focus-ring: 2px;
+  --focus-offset: 2px;
 
   /* Layout */
   --content-max: 560px;
