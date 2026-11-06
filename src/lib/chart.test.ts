@@ -5,10 +5,16 @@ import {
   CHART_WIDTH,
   computeChartGeometry,
   computeHighlightPath,
+  computeNiceTicks,
+  computeSegmentPath,
+  computeSelectionBand,
   findNearestPointIndex,
   getSteppedIndex,
+  pickLabelIndices,
   toChartRatio,
+  toHeightPercent,
   toTooltipPosition,
+  toWidthPercent,
 } from './chart'
 
 describe('computeChartGeometry', () => {
@@ -117,5 +123,54 @@ describe('toTooltipPosition', () => {
 
     expect(toTooltipPosition(point, { positionX: 400, positionY: 30 }).placement).toBe('below')
     expect(toTooltipPosition(point, null).placement).toBe('middle')
+  })
+})
+
+describe('computeNiceTicks', () => {
+  test('picks round values inside the range', () => {
+    expect(computeNiceTicks(1012, 1188, 4)).toEqual([1050, 1100, 1150])
+    expect(computeNiceTicks(0, 1, 4)).toEqual([0, 0.25, 0.5, 0.75, 1])
+  })
+
+  test('keeps float noise out of the values', () => {
+    expect(computeNiceTicks(0.1, 0.7, 3)).toEqual([0.2, 0.4, 0.6])
+  })
+})
+
+describe('chart ticks', () => {
+  test('come with line geometry, inside the visible range', () => {
+    const geometry = computeChartGeometry([1000, 1100, 1050], 1000)
+    const ticks = geometry.kind === 'line' ? geometry.ticks : []
+
+    expect(ticks.map(({ amount }) => amount)).toEqual([1000, 1050, 1100])
+    expect(ticks.every(({ positionY }) => positionY > 0 && positionY < CHART_HEIGHT)).toBe(true)
+  })
+})
+
+describe('pickLabelIndices', () => {
+  test('labels every point when few, else spreads labels including both ends', () => {
+    expect(pickLabelIndices(3, 4)).toEqual([0, 1, 2])
+    expect(pickLabelIndices(10, 4)).toEqual([0, 3, 6, 9])
+    expect(pickLabelIndices(5, 4)).toEqual([0, 1, 3, 4])
+  })
+})
+
+describe('computeSegmentPath', () => {
+  test('runs through the selected points', () => {
+    expect(computeSegmentPath(points, 1, 2)).toBe('M260,50 L512,80')
+  })
+})
+
+describe('computeSelectionBand', () => {
+  test('spans the selected points, or nothing when one is missing', () => {
+    expect(computeSelectionBand(points, 0, 2)).toEqual({ left: 8, width: 504 })
+    expect(computeSelectionBand(points, 1, 9)).toBeNull()
+  })
+})
+
+describe('toWidthPercent and toHeightPercent', () => {
+  test('convert viewBox positions to percentages', () => {
+    expect(toWidthPercent(CHART_WIDTH / 2)).toBe(50)
+    expect(toHeightPercent(CHART_HEIGHT)).toBe(100)
   })
 })

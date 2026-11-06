@@ -1,12 +1,15 @@
 import { useState } from 'react'
 
-import { getTone } from '../lib/calc'
+import { useChartInteraction } from '../hooks/useChartInteraction'
 import { computeChartGeometry } from '../lib/chart'
-import { formatEuro, formatPercent, formatSignedEuro } from '../lib/format'
+import type { ChartPoint } from '../lib/chart'
+import { formatEuro } from '../lib/format'
 import { computeRangeSeries } from '../lib/ranges'
 import type { ChartRange } from '../lib/ranges'
+import { summarizeSelection } from '../lib/selection'
 import type { Summary } from '../lib/types'
 import { BalanceChart } from './BalanceChart'
+import { HeroDelta } from './HeroDelta'
 import { RangeSelector } from './RangeSelector'
 
 import styles from './Hero.module.css'
@@ -28,17 +31,26 @@ const rangeCaptions = {
   ALL: '',
 } as const satisfies Record<ChartRange, string>
 
-/** The balance after tax, its change over the chosen range, and the balance chart. */
+const noPoints: readonly ChartPoint[] = []
+
+/** The balance after tax, its change over the chosen range or selection, and the chart. */
 export function Hero({ summary: { balance, closedResults }, start, today }: HeroProps) {
   const [range, setRange] = useState<ChartRange>('ALL')
   const series = computeRangeSeries(closedResults, { start, range, today })
-  const balances = series.points.map(({ balance: pointBalance }) => pointBalance)
-  const geometry = computeChartGeometry(balances, series.startBalance)
+
+  const geometry = computeChartGeometry(
+    series.points.map(({ balance: pointBalance }) => pointBalance),
+    series.startBalance,
+  )
+
+  const interaction = useChartInteraction(geometry.kind === 'line' ? geometry.points : noPoints)
+  const { selection, handleClearSelection } = interaction
+  const selected = selection === null ? null : summarizeSelection(series.points, selection)
   const balanceText = formatEuro(balance)
-  const caption = range === 'ALL' ? `from ${formatEuro(start)}` : rangeCaptions[range]
 
   function handleSelectRange(nextRange: ChartRange) {
     setRange(nextRange)
+    handleClearSelection()
   }
 
   return (
@@ -48,13 +60,19 @@ export function Hero({ summary: { balance, closedResults }, start, today }: Hero
       <div key={balanceText} className={styles.balance}>
         {balanceText}
       </div>
-      <div className={styles.delta}>
-        <span className={`${styles.chip} ${styles[getTone(series.change)]}`}>
-          {formatSignedEuro(series.change)} · {formatPercent(series.changeRatio)}
-        </span>
-        <span className={styles.from}>{caption}</span>
-      </div>
-      <BalanceChart geometry={geometry} points={series.points} />
+      <HeroDelta
+        change={series.change}
+        changeRatio={series.changeRatio}
+        caption={range === 'ALL' ? `from ${formatEuro(start)}` : rangeCaptions[range]}
+        selection={selected}
+        onClearSelection={handleClearSelection}
+      />
+      <BalanceChart
+        geometry={geometry}
+        points={series.points}
+        interaction={interaction}
+        selected={selected}
+      />
       <ChartNote
         hasAnyTrades={closedResults.length > 0}
         hasTradesInRange={series.points.length > 1}

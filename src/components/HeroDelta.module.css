@@ -1,0 +1,72 @@
+.delta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: center;
+  margin-block-start: var(--space-12);
+  font-size: var(--text-14);
+}
+
+.chip {
+  padding-block: var(--space-2);
+  padding-inline: var(--space-8);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-pill);
+}
+
+.gain {
+  color: var(--gain);
+  background: var(--gain-soft);
+}
+
+.loss {
+  color: var(--loss);
+  background: var(--loss-soft);
+}
+
+.from {
+  color: var(--muted);
+}
+
+.clearButton {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  margin-inline-start: auto;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-8);
+  font-size: var(--text-13);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  background: var(--field);
+  border: 0;
+  border-radius: var(--radius-pill);
+  animation: fade-in var(--duration-base) var(--ease-out);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+
+  &:active {
+    transform: scale(var(--press-scale));
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (hover: hover) {
+  .clearButton:hover {
+    color: var(--ink);
+  }
+}
+
+@media (width >= 1024px) {
+  .delta {
+    align-self: stretch;
+    margin-block-start: var(--space-16);
+    font-size: var(--text-16);
+  }
+}

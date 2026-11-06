@@ -95,6 +95,8 @@ const verbs = new Set([
   'can',
   'chain',
   'check',
+  'clear',
+  'extend',
   'close',
   'collect',
   'compare',

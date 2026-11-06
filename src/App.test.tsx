@@ -172,13 +172,32 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: '1D' }).getAttribute('aria-pressed')).toBe('true')
     expect(screen.getByText('today')).toBeTruthy()
 
-    const chart = screen.getByRole('slider', { name: 'Balance after each closed trade' })
+    const chart = screen.getByRole('slider', { name: /Balance after each closed trade/ })
 
     chart.focus()
     await user.keyboard('{ArrowLeft}')
 
     expect(chart.getAttribute('aria-valuetext')).toMatch(/balance/)
     expect(screen.getByText(/^Balance \d/)).toBeTruthy()
+  })
+
+  test('measures a stretch of the chart with Shift and arrow keys', async () => {
+    const user = userEvent.setup()
+    const { storage } = createFakeStorage()
+
+    render(<App storage={storage} />)
+    await user.click(await screen.findByRole('button', { name: 'Settings' }))
+    await user.click(getSheet().getByRole('button', { name: 'Load demo data' }))
+    await user.click(getSheet().getByRole('button', { name: 'Tap again to replace your log' }))
+
+    screen.getByRole('slider', { name: /Balance after each closed trade/ }).focus()
+    await user.keyboard('{Shift>}{ArrowLeft}{ArrowLeft}{/Shift}')
+
+    expect(screen.getByText(/→ .* · 2 trades/)).toBeTruthy()
+
+    await user.click(screen.getByRole('button', { name: /Clear/ }))
+
+    expect(screen.queryByText(/→ .* · 2 trades/)).toBeNull()
   })
 
   test('never saves over data it could not read', async () => {
