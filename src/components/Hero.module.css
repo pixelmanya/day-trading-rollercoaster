@@ -1,0 +1,74 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: var(--space-22) var(--space-14);
+  padding-inline: var(--space-20);
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(var(--grid) var(--hairline), transparent var(--hairline)),
+    linear-gradient(90deg, var(--grid) var(--hairline), transparent var(--hairline));
+  background-position: calc(var(--hairline) * -1) calc(var(--hairline) * -1);
+  background-size: var(--grid-cell) var(--grid-cell);
+  border-radius: var(--radius-22);
+}
+
+.heroTop {
+  display: flex;
+  gap: var(--space-12);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--text-15);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+}
+
+.settingsButton {
+  padding: var(--space-6);
+  font-size: var(--text-15);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  background: none;
+  border: 0;
+}
+
+.balance {
+  display: inline-block;
+  margin-block-start: var(--space-14);
+  padding-inline-end: var(--space-6);
+  font-size: var(--text-display);
+  font-weight: var(--weight-extrabold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  background: var(--surface);
+}
+
+.delta {
+  display: inline-block;
+  margin-block-start: var(--space-8);
+  padding-inline-end: var(--space-6);
+  font-size: var(--text-16);
+  font-weight: var(--weight-semibold);
+  background: var(--surface);
+}
+
+.from {
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+}
+
+.gain {
+  color: var(--gain);
+}
+
+.loss {
+  color: var(--loss);
+}
+
+.chartNote {
+  margin-block-start: var(--space-4);
+  font-size: var(--text-13);
+  color: var(--muted);
+}

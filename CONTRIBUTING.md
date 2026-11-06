@@ -449,6 +449,7 @@ tools/
   oxlint-plugin-layout.js  Lint rule for blank lines around blocks
   oxlint-plugin-destructuring.js  Lint rule for destructuring parameters
   ast-helpers.js           Shared helpers for the plugins
+  generate-css-types.js    Typed declarations for CSS modules (*.module.d.css.ts, generated)
 ```
 
 Rules that keep it that way:
@@ -531,7 +532,10 @@ Rules that keep it that way:
 
 ### Files and tokens
 
-- CSS Modules: `Component.module.css` next to `Component.tsx`, imported as `styles`.
+- CSS Modules: `Component.module.css` next to `Component.tsx`, imported as `styles`. Each gets
+  a generated declaration, so `styles.closeButton` is typed and a misspelled class fails
+  `pnpm typecheck`. The declarations are git-ignored and rebuilt by `pnpm typecheck`, `pnpm
+  build` and `pnpm install`.
 - `src/styles/tokens.css` holds every design value: colors, type sizes and weights, spacing,
   radii, line widths, shadows and durations. It is the **only** place raw colors and sizes
   appear; stylelint enforces this.

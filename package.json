@@ -5,18 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "tsc -b && vite build",
-    "typecheck": "tsc -b",
+    "build": "pnpm css-types && tsc -b && vite build",
+    "typecheck": "pnpm css-types && tsc -b",
     "lint": "oxlint --deny-warnings && stylelint \"**/*.css\"",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "prepare": "lefthook install",
+    "prepare": "lefthook install && node tools/generate-css-types.js",
     "lint:css": "stylelint \"**/*.css\"",
     "lint:fix": "oxlint --fix; oxfmt; oxlint --fix; stylelint --fix \"**/*.css\"",
-    "start": "node .output/server/index.mjs"
+    "start": "node .output/server/index.mjs",
+    "css-types": "node tools/generate-css-types.js"
   },
   "dependencies": {
     "@tanstack/react-router": "1.170.46",

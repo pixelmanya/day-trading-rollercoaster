@@ -1,0 +1,55 @@
+.dialog {
+  inline-size: 100%;
+  max-inline-size: none;
+  margin-block: auto 0;
+  margin-inline: auto;
+  padding: 0;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+
+  &::backdrop {
+    background: var(--scrim);
+  }
+}
+
+.sheet {
+  overflow: auto;
+  max-inline-size: var(--content-max);
+  max-block-size: 88vh;
+  margin-inline: auto;
+  padding-block: var(--space-22) calc(var(--space-22) + env(safe-area-inset-bottom));
+  padding-inline: var(--space-18);
+  background: var(--surface);
+  border-start-start-radius: var(--radius-24);
+  border-start-end-radius: var(--radius-24);
+}
+
+.dialog[open] .sheet {
+  animation: sheet-up var(--duration-sheet) ease-out;
+}
+
+@keyframes sheet-up {
+  from {
+    opacity: 0.4;
+    transform: translateY(var(--sheet-offset));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open] .sheet {
+    animation: none;
+  }
+}
+
+.title {
+  margin-block-end: var(--space-4);
+  font-size: var(--text-21);
+  font-weight: var(--weight-bold);
+}
+
+.hint {
+  margin-block-end: var(--space-14);
+  font-size: var(--text-13-5);
+  color: var(--muted);
+}

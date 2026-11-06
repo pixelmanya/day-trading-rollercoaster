@@ -1,15 +1,19 @@
 import { abbreviations } from './tools/oxlint-plugin-naming.js'
 
-const abbreviationPattern = Object.keys(abbreviations)
-  .map((word) => `${word}|${word[0].toUpperCase()}${word.slice(1)}`)
+const lowercaseAbbreviations = Object.keys(abbreviations).join('|')
+
+const capitalizedAbbreviations = Object.keys(abbreviations)
+  .map((word) => `${word[0].toUpperCase()}${word.slice(1)}`)
   .join('|')
 
 /**
  * camelCase, at least 3 characters, and no abbreviation as a word (closeBtn, errMsg) —
  * the same word list as the naming lint for TS.
  */
+// An abbreviation counts only as a whole camelCase word: first word (lowercase) or a later word
+// (capitalized). "label" is fine, "elLabel" and "closeBtn" are not.
 const classNamePattern = new RegExp(
-  `^(?!(?:.*[a-z0-9])?(?:${abbreviationPattern})(?:[A-Z0-9]|$))[a-z][a-zA-Z0-9]{2,}$`,
+  `^(?!(?:${lowercaseAbbreviations})(?:[A-Z0-9]|$)|.*(?:${capitalizedAbbreviations})(?:[A-Z0-9]|$))[a-z][a-zA-Z0-9]{2,}$`,
 )
 
 /** @type {import('stylelint').Config} */

@@ -1,0 +1,25 @@
+.banner {
+  display: flex;
+  gap: var(--space-12);
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: var(--space-14);
+  padding-block: var(--space-12);
+  padding-inline: var(--space-16);
+  font-size: var(--text-14-5);
+  color: var(--loss);
+  background: var(--surface);
+  border-radius: var(--radius-16);
+}
+
+.retryButton {
+  flex-shrink: 0;
+  padding-block: var(--space-8);
+  padding-inline: var(--space-16);
+  font-size: var(--text-14);
+  font-weight: var(--weight-semibold);
+  color: var(--surface);
+  background: var(--loss);
+  border: 0;
+  border-radius: var(--radius-pill);
+}

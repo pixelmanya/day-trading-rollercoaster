@@ -288,5 +288,13 @@
       }
     }
   ],
-  "ignorePatterns": ["dist", "coverage", ".output", ".nitro", ".tanstack", "src/routeTree.gen.ts"]
+  "ignorePatterns": [
+    "dist",
+    "coverage",
+    ".output",
+    ".nitro",
+    ".tanstack",
+    "src/routeTree.gen.ts",
+    "**/*.d.css.ts"
+  ]
 }

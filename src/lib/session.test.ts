@@ -10,9 +10,12 @@ import { createEmptyState } from './state'
 const loadError = createAppError('loadFailed', 'Couldn’t read your saved log.')
 const saveError = createAppError('saveFailed', 'Couldn’t save.')
 
+const TODAY = '2026-11-06'
+
 const ready: ReadySession = {
   phase: 'ready',
   appState: createEmptyState(),
+  today: TODAY,
   revision: 0,
   saveError: null,
 }
@@ -21,7 +24,9 @@ describe('reduceSession', () => {
   test('becomes ready with the loaded state and nothing to save', () => {
     const appState = createEmptyState()
 
-    expect(reduceSession(INITIAL_SESSION, { type: 'loadSucceeded', appState })).toEqual({
+    expect(
+      reduceSession(INITIAL_SESSION, { type: 'loadSucceeded', appState, today: TODAY }),
+    ).toEqual({
       ...ready,
       appState,
     })
@@ -64,7 +69,8 @@ describe('reduceSession', () => {
 
 describe('createLoadEvent', () => {
   test('starts an empty log when nothing was saved', () => {
-    expect(createLoadEvent(succeed(null))).toEqual({
+    expect(createLoadEvent(succeed(null), TODAY)).toEqual({
+      today: TODAY,
       type: 'loadSucceeded',
       appState: createEmptyState(),
     })
@@ -73,8 +79,16 @@ describe('createLoadEvent', () => {
   test('passes on a loaded state or the failure', () => {
     const appState = createEmptyState()
 
-    expect(createLoadEvent(succeed(appState))).toEqual({ type: 'loadSucceeded', appState })
-    expect(createLoadEvent(fail(loadError))).toEqual({ type: 'loadFailed', error: loadError })
+    expect(createLoadEvent(succeed(appState), TODAY)).toEqual({
+      type: 'loadSucceeded',
+      appState,
+      today: TODAY,
+    })
+
+    expect(createLoadEvent(fail(loadError), TODAY)).toEqual({
+      type: 'loadFailed',
+      error: loadError,
+    })
   })
 })
 

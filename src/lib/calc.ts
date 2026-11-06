@@ -39,6 +39,11 @@ export function isOpen(trade: Trade): trade is OpenTrade {
   return trade.sellPrice === null
 }
 
+/** The trade with `tradeId`, or null if there is none. */
+export function findTrade(trades: readonly Trade[], tradeId: string): Trade | null {
+  return trades.find(({ tradeId: candidateId }) => candidateId === tradeId) ?? null
+}
+
 /** Money tied up in a position: shares × buy price plus the buy fee, in €. */
 export function computePositionCost({ shares, buyPrice, buyFee }: Position): number {
   return shares * buyPrice + buyFee
