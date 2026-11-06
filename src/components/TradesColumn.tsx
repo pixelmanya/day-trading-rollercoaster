@@ -16,7 +16,7 @@ interface TradesColumnProps {
 /** "Log a buy", the open and closed trades, and how tax is calculated. */
 export function TradesColumn({ summary, settings, onLogBuy, onEdit, onSell }: TradesColumnProps) {
   return (
-    <div>
+    <div className={styles.column}>
       {/* Floats over the page on phones, sits above the trades on desktop */}
       <button type="button" className={styles.logBuyButton} onClick={onLogBuy}>
         Log a buy

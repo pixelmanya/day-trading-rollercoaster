@@ -61,7 +61,14 @@ export function BalanceChart({ geometry }: BalanceChartProps) {
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
-      <circle cx={geometry.endX} cy={geometry.endY} r="5" fill="var(--line)" />
+      {/* A zero-length line with round caps: unlike a circle, it stays round when the chart stretches */}
+      <path
+        d={`M${geometry.endX},${geometry.endY} h0`}
+        stroke="var(--line)"
+        strokeWidth="10"
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
     </svg>
   )
 }
