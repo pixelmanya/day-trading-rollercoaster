@@ -1,5 +1,6 @@
 import type { Settings, Summary } from '../lib/types'
 import { ClosedTrades } from './ClosedTrades'
+import { Icon } from './Icon'
 import { OpenPositions } from './OpenPositions'
 import { TaxFootnote } from './TaxFootnote'
 
@@ -19,6 +20,7 @@ export function TradesColumn({ summary, settings, onLogBuy, onEdit, onSell }: Tr
     <div className={styles.column}>
       {/* Floats over the page on phones, sits above the trades on desktop */}
       <button type="button" className={styles.logBuyButton} onClick={onLogBuy}>
+        <Icon name="plus" />
         Log a buy
       </button>
       <OpenPositions

@@ -9,11 +9,11 @@ interface ListProps {
   readonly children: ReactNode
 }
 
-/** A card of rows, or a short note when there are none. */
+/** A card of rows, or a quiet dashed note when there are none. */
 export function List({ isEmpty, emptyText, children }: ListProps) {
-  return (
-    <div className={styles.list}>
-      {isEmpty ? <div className={styles.empty}>{emptyText}</div> : children}
-    </div>
+  return isEmpty ? (
+    <p className={styles.empty}>{emptyText}</p>
+  ) : (
+    <div className={styles.list}>{children}</div>
   )
 }

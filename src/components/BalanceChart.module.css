@@ -6,6 +6,69 @@
   margin-block-start: var(--space-14);
 }
 
+.baseline {
+  stroke: var(--muted);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.line {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+/* The line and its area draw in from left to right */
+.reveal {
+  animation: reveal var(--duration-draw) var(--ease-out);
+}
+
+.endPoint {
+  stroke: var(--line);
+  stroke-width: 10;
+  stroke-linecap: round;
+  animation: fade-in var(--duration-base) var(--ease-out) var(--duration-draw) backwards;
+}
+
+/* A soft ring that breathes around the latest balance */
+.pulse {
+  stroke: var(--line);
+  stroke-width: 10;
+  stroke-linecap: round;
+  opacity: 0;
+  animation: pulse var(--duration-pulse) var(--ease-out) var(--duration-draw) infinite;
+}
+
+@keyframes reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    stroke-width: 10;
+    opacity: 0.35;
+  }
+
+  70%,
+  100% {
+    stroke-width: 28;
+    opacity: 0;
+  }
+}
+
 /* Desktop: the chart fills whatever height the hero panel leaves */
 @media (width >= 1024px) {
   .chart {

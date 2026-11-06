@@ -556,7 +556,7 @@ Rules that keep it that way:
 - Native CSS nesting, at most one level, for states and pseudo-elements (`&:hover`,
   `&[open]`, `&::backdrop`) and media queries.
 - Variants are separate classes combined in TSX (`className={`${styles.row} ${styles.gain}`}`).
-  No `!important`.
+  No `!important`, except in the global reduced-motion override.
 
 ### Properties
 
@@ -585,7 +585,14 @@ Rules that keep it that way:
   and rows. Every interactive element gets hover feedback.
 - Layout must work from 320 px wide with no horizontal scroll, and respect safe-area insets
   (`env(safe-area-inset-*)`).
-- Every animation has a `prefers-reduced-motion: reduce` override that disables it.
+- Motion is quiet and quick: feedback uses `--duration-fast`, entrances `--duration-base`, all
+  with `--ease-out`. Use it to explain change (a new balance fades in, the chart redraws when a
+  trade closes, rows rise in, buttons press to `--press-scale`), never as decoration that loops,
+  except the single pulse on the chart's latest point.
+- `global.css` switches every animation and transition off under `prefers-reduced-motion:
+  reduce`, so components don't need their own override.
+- Components that change layout with the space they get, rather than the window, use a container
+  query on a named container (the desktop stats strip uses `@container summary`).
 
 ## UI copy
 

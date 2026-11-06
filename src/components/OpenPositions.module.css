@@ -1,14 +1,20 @@
 .row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--space-2) var(--space-12);
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--space-12);
+  align-items: center;
   padding-block: var(--space-14);
   padding-inline: var(--space-16);
   border-block-start: var(--hairline) solid var(--grid);
+  animation: rise-in var(--duration-base) var(--ease-out) backwards;
 
   &:first-child {
     border-block-start: 0;
   }
+}
+
+.main {
+  min-inline-size: 0;
 }
 
 .ticker {
@@ -24,41 +30,59 @@
 .amount {
   font-size: var(--text-16);
   font-weight: var(--weight-bold);
-  text-align: end;
 }
 
-.editDetail {
-  font-size: var(--text-13);
-  font-weight: var(--weight-regular);
-  color: var(--muted);
+.actions {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
 }
 
 .editButton {
+  display: grid;
+  place-items: center;
+  inline-size: var(--space-28);
+  block-size: var(--space-28);
   padding: 0;
-  font-size: var(--text-15);
-  font-weight: var(--weight-semibold);
+  font-size: var(--text-16);
   color: var(--muted);
   background: none;
   border: 0;
+  border-radius: var(--radius-pill);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
 }
 
 .sellButton {
-  grid-column: 1 / -1;
-  justify-self: start;
-  margin-block-start: var(--space-10);
-  padding-block: var(--space-8);
-  padding-inline: var(--space-16);
+  padding-block: var(--space-6);
+  padding-inline: var(--space-14);
   font-size: var(--text-14);
   font-weight: var(--weight-semibold);
   color: var(--surface);
   background: var(--ink);
   border: 0;
   border-radius: var(--radius-pill);
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+
+  &:active {
+    transform: scale(var(--press-scale));
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise-offset));
+  }
 }
 
 @media (hover: hover) {
   .editButton:hover {
     color: var(--ink);
+    background: var(--field);
   }
 
   .sellButton:hover {

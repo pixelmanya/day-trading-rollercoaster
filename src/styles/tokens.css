@@ -19,6 +19,8 @@
   --area: rgb(47 67 201 / 10%);
   --gain: #16804f;
   --loss: #bf3a32;
+  --gain-soft: rgb(22 128 79 / 10%);
+  --loss-soft: rgb(191 58 50 / 10%);
   --field: #eef2f7;
   --scrim: rgb(16 22 32 / 45%);
 
@@ -92,7 +94,7 @@
   /* Desktop (from 1024px): full-bleed hero on the left half, trades centered on the right */
   --page-gutter-wide: clamp(var(--space-28), 4vw, var(--space-60));
   --trades-max-wide: 680px;
-  --chart-min-wide: 220px;
+  --chart-min-wide: 120px;
   --text-display-wide: clamp(4rem, 5.6vw, 7rem);
   --text-24: 1.5rem;
   --dialog-max: 480px;
@@ -104,6 +106,16 @@
 
   /* Hover feedback on pointer devices */
   --hover-opacity: 0.88;
+  --press-scale: 0.97;
+
+  /* Motion: quick feedback, gentle entrances; all off under prefers-reduced-motion */
+  --duration-fast: 0.12s;
+  --duration-base: 0.24s;
+  --duration-draw: 0.9s;
+  --duration-pulse: 2.4s;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --rise-offset: 6px;
+  --layer-badge: 20;
   --sheet-offset: 24px;
 }
 
@@ -120,6 +132,8 @@
     --area: rgb(142 156 255 / 14%);
     --gain: #3cc488;
     --loss: #f2695e;
+    --gain-soft: rgb(60 196 136 / 14%);
+    --loss-soft: rgb(242 105 94 / 14%);
     --field: #1f2836;
     --scrim: rgb(0 0 0 / 60%);
     --on-accent: #0f141c;

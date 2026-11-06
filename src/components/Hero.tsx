@@ -3,6 +3,7 @@ import { computeChartGeometry } from '../lib/chart'
 import { formatEuro, formatPercent, formatSignedEuro } from '../lib/format'
 import type { Summary } from '../lib/types'
 import { BalanceChart } from './BalanceChart'
+import { Icon } from './Icon'
 
 import styles from './Hero.module.css'
 
@@ -12,35 +13,41 @@ interface HeroProps {
   readonly onOpenSettings: () => void
 }
 
-/** Balance after tax, its change against the start budget, and the balance chart. */
+/** The balance after tax, its change since the start, and the balance chart. */
 export function Hero({
   summary: { balance, change, changeRatio, closedResults },
   start,
   onOpenSettings,
 }: HeroProps) {
   const geometry = computeChartGeometry(computeBalanceSeries(closedResults, start), start)
+  const balanceText = formatEuro(balance)
 
   return (
-    <section className={styles.hero}>
+    <section className={styles.hero} aria-label="Balance">
       <div className={styles.heroTop}>
-        <div className={styles.title}>Started with {formatEuro(start)}</div>
-        <button type="button" className={styles.settingsButton} onClick={onOpenSettings}>
-          Settings
+        <span className={styles.label}>Balance after tax</span>
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label="Settings"
+          onClick={onOpenSettings}
+        >
+          <Icon name="settings" />
         </button>
       </div>
-      <div className={styles.balance}>{formatEuro(balance)}</div>
-      <br />
+      {/* Keyed by its text, so a new balance fades in */}
+      <div key={balanceText} className={styles.balance}>
+        {balanceText}
+      </div>
       <div className={styles.delta}>
-        <span className={styles[getTone(change)]}>
-          {formatSignedEuro(change)} ({formatPercent(changeRatio)})
-        </span>{' '}
-        <span className={styles.from}>after tax</span>
+        <span className={`${styles.chip} ${styles[getTone(change)]}`}>
+          {formatSignedEuro(change)} · {formatPercent(changeRatio)}
+        </span>
+        <span className={styles.from}>from {formatEuro(start)}</span>
       </div>
       <BalanceChart geometry={geometry} />
       {closedResults.length > 0 ? null : (
-        <div className={styles.chartNote}>
-          The line starts moving once you close your first trade.
-        </div>
+        <p className={styles.chartNote}>The line starts moving once you close your first trade.</p>
       )}
     </section>
   )

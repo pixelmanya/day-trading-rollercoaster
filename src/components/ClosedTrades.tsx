@@ -23,8 +23,12 @@ export function ClosedTrades({ closedResults, sumNet, onEdit }: ClosedTradesProp
   const isEmpty = closedResults.length === 0
 
   return (
-    <>
-      <SectionHeading title="Closed" meta={isEmpty ? '' : `${formatSignedEuro(sumNet)} net`} />
+    <section aria-label="Closed trades">
+      <SectionHeading
+        title="Closed"
+        count={closedResults.length}
+        meta={isEmpty ? '' : `${formatSignedEuro(sumNet)} net`}
+      />
       <List
         isEmpty={isEmpty}
         emptyText="Closed trades show up here with their net result after fees and tax."
@@ -37,7 +41,7 @@ export function ClosedTrades({ closedResults, sumNet, onEdit }: ClosedTradesProp
           />
         ))}
       </List>
-    </>
+    </section>
   )
 }
 
@@ -49,18 +53,27 @@ function ClosedTradeRow({
     onEdit(trade.tradeId)
   }
 
+  const tone = getTone(net)
+
   return (
-    <button type="button" className={styles.row} onClick={handleEdit}>
-      <span>
+    <button
+      type="button"
+      className={styles.row}
+      aria-label={`Edit ${trade.ticker}, ${formatSignedEuro(net)}`}
+      onClick={handleEdit}
+    >
+      <span className={styles.main}>
         <span className={styles.ticker}>{trade.ticker}</span>
         <span className={styles.detail}>
-          {formatShortDate(trade.buyDate)} to {formatShortDate(trade.sellDate)} · fees{' '}
+          {formatShortDate(trade.buyDate)} → {formatShortDate(trade.sellDate)} · fees{' '}
           {formatEuro(fees)} · tax {formatEuro(tax)}
         </span>
       </span>
-      <span className={`${styles.amount} ${styles[getTone(net)]}`}>
-        {formatSignedEuro(net)}
-        <span className={styles.returnRatio}>{formatPercent(returnRatio)}</span>
+      <span className={styles.result}>
+        <span className={`${styles.net} ${styles[tone]}`}>{formatSignedEuro(net)}</span>
+        <span className={`${styles.returnChip} ${styles[`${tone}Chip`]}`}>
+          {formatPercent(returnRatio)}
+        </span>
       </span>
     </button>
   )

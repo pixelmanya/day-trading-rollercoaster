@@ -30,6 +30,7 @@ export function Sheet({ isOpen, title, hint, onClose, children }: SheetProps) {
     // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- backdrop click is a pointer shortcut; keyboard users close with Escape (native) or Cancel
     <dialog ref={dialogRef} className={styles.dialog} onClose={onClose} onClick={handleClick}>
       <div className={styles.sheet}>
+        <div className={styles.handle} aria-hidden="true" />
         <h3 className={styles.title}>{title}</h3>
         <p className={styles.hint}>{hint}</p>
         {children}

@@ -1,9 +1,18 @@
+/* Floats above the page so it never shifts the layout */
 .badge {
-  padding-block: var(--space-6);
-  padding-inline: var(--space-16);
+  position: fixed;
+  inset-block-start: calc(var(--space-8) + env(safe-area-inset-top));
+  inset-inline-start: 50%;
+  z-index: var(--layer-badge);
+  padding-block: var(--space-4);
+  padding-inline: var(--space-12);
   font-size: var(--text-12-5);
   font-weight: var(--weight-semibold);
   color: var(--surface);
-  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
   background: var(--ink);
+  border-radius: var(--radius-pill);
+  opacity: 0.85;
+  transform: translateX(-50%);
 }
