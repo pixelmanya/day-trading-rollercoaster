@@ -1,0 +1,9 @@
+.badge {
+  padding-block: var(--space-6);
+  padding-inline: var(--space-16);
+  font-size: var(--text-12-5);
+  font-weight: var(--weight-semibold);
+  color: var(--surface);
+  text-align: center;
+  background: var(--ink);
+}
