@@ -10,4 +10,4 @@
 
 - [ ] `pnpm check` passes locally
 - [ ] Money/tax math changes are covered in `src/lib/*.test.ts`
-- [ ] UI changes checked in light and dark mode at phone width
+- [ ] UI changes checked in light and dark mode at phone width, on the Render preview
