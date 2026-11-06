@@ -9,6 +9,19 @@
   grid-column: 1 / -1;
 }
 
+/* Phones: a slim bar that stays at the top while the page scrolls */
+.toolbar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--layer-toolbar);
+  margin-block: calc(var(--space-20) * -1) var(--space-10);
+  margin-inline: calc(var(--space-18) * -1);
+  padding-block: var(--space-10);
+  padding-inline: var(--space-18);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(var(--toolbar-blur));
+}
+
 /* Desktop: hero fills the left half and stays put; on the right, the toolbar in the top corner,
    then the save banner, then the trades centered in the remaining height */
 @media (width >= 1024px) {
@@ -22,8 +35,13 @@
   }
 
   .toolbar {
+    position: static;
     grid-row: 1;
     grid-column: 2;
+    margin: 0;
+    padding: 0;
+    background: none;
+    backdrop-filter: none;
   }
 
   .banner {
