@@ -46,7 +46,7 @@ Set your editor to format on save with oxfmt (or run `pnpm format` before commit
 - Optional properties (`foo?: T`) mean "may be absent". If a value can be present-but-empty, type
   it `T | null` (or `T | undefined`) explicitly.
 - Untrusted data (storage, imported files, later the network) enters only through a validator
-  (`parseState` in `src/lib/state.ts`) that turns `unknown` into typed state or throws. Never cast
+  (`parseState` in `src/lib/state.ts`) that turns `unknown` into a `Result` of typed state. Never cast
   parsed JSON with `as`.
 - `interface` for object shapes, `type` for unions, aliases and mapped types.
 - Named exports only. The one exception is config files that tooling requires as default exports
@@ -94,18 +94,28 @@ Set your editor to format on save with oxfmt (or run `pnpm format` before commit
 
 ### Control flow
 
-- Guard clauses first, then the main path. No `else` after `return`, `throw` or `continue`.
+- Guard clauses first, then the main path. No `else` after `return`.
 
   ```ts
-  function tradeFrom(v: unknown): Trade {
-    if (!isObject(v)) throw new InvalidStateError('…')
-    if (!isPositive(v['shares'])) throw new InvalidStateError('…')
-    return { … }
+  function tradeFrom(v: unknown, at: string): Result<Trade, AppError> {
+    if (!isObject(v)) return err(invalidState(`${at} is not an object.`))
+    if (!isPositive(v['shares'])) return err(invalidState(`${at}: shares must be above 0.`))
+    return ok({ … })
   }
   ```
 
+- Prefer expressions to statements: a ternary or a small lookup object over an `if` chain that
+  assigns, `.map`/`.filter`/`.reduce` over loops.
 - Use `??` and `?.` for null handling, not `||` (which also swallows `0` and `''`).
-- `switch` on discriminated unions ends with an exhaustive `never` check.
+- `switch` on a discriminated union returns from every case and ends with an exhaustiveness
+  check that doesn't throw:
+
+  ```ts
+  default: {
+    const unhandled: never = action
+    return unhandled
+  }
+  ```
 
 ### File layout
 
@@ -142,6 +152,61 @@ helper.
 - Callback props are named `onX` (`onSave`, `onClose`); handlers inside a component `handleX`.
 - No `React.FC`; type props on the parameter.
 
+## Functional style
+
+The codebase is functional: plain data in, plain data out. Behaviour lives in functions, never
+in objects with methods and hidden state.
+
+- **No classes, no `this`.** Things that would be objects with methods are factory functions
+  returning a record of functions, closed over their dependencies:
+
+  ```ts
+  export interface StorageAdapter {
+    readonly load: () => Promise<Result<AppState | null, AppError>>
+    readonly save: (state: AppState) => Promise<Result<void, AppError>>
+  }
+
+  export function createLocalStorageAdapter(store: KeyValueStore, key: string): StorageAdapter {
+    return {
+      load: async () => …,
+      save: async (state) => …,
+    }
+  }
+  ```
+
+- **Pure functions** for everything in `src/lib`: same inputs, same output, no side effects.
+  Effects (storage, DOM, clock, randomness) happen only at the edges: storage adapters,
+  `useAppState`, event handlers, `main.tsx`.
+- **No mutation, anywhere.** Only `const`; no `let`/`var`, no loops, no `++`, no assignment to
+  properties, no mutating methods (`push`, `sort`, `splice`, `Map#set`, …). Use spread,
+  `map`/`filter`/`reduce`/`flatMap`, `toSorted`/`toReversed`/`toSpliced`/`with`, and recursion.
+
+  ```ts
+  // Running balance after each closed trade
+  export function balanceSeries(closed: readonly ClosedResult[], start: number): readonly number[] {
+    return closed.reduce<readonly number[]>(
+      (pts, r) => [...pts, (pts.at(-1) ?? start) + r.net],
+      [start],
+    )
+  }
+  ```
+
+- Accumulate with `reduce` into a fresh object or tuple; keyed totals use objects built with
+  spread (`{ ...acc, [year]: total }`) rather than a `Map` that you `set`.
+- **Small composable functions.** Split a calculation into named steps and compose them; the
+  `pipe` helper in `src/lib/fp.ts` threads a value through several functions left to right.
+- **No FP library.** Native array methods, spread, our `pipe` and our `Result` type cover what
+  this app needs.
+- **Escape hatches** for imperative browser APIs (React refs, `<dialog>`, the DOM) are allowed
+  only outside `src/lib`, one line at a time, with a reason:
+  `// oxlint-disable-next-line fp/no-mutation -- React ref for <dialog>`.
+
+Enforced by oxlint: built-in rules (`no-param-reassign` with props, `prefer-const`, `no-var`,
+`no-plusplus`) and the in-repo plugin `tools/oxlint-plugin-fp.js` (`fp/no-class`, `fp/no-this`,
+`fp/no-let`, `fp/no-loop`, `fp/no-mutation`, and `fp/no-throw` in `src/lib`).
+
+## Naming
+
 ## Naming
 
 | Thing                         | Style              | Example                           |
@@ -153,6 +218,8 @@ helper.
 | Other source files            | camelCase          | `calc.ts`, `localStorage.ts`      |
 | CSS module classes            | camelCase          | `.closeBtn`                       |
 | Booleans                      | `is`/`has`/`can` … | `isClosed`, `hasError`            |
+| Factory functions             | `create…`          | `createLocalStorageAdapter`       |
+| Result constructors           | lowercase verbs    | `ok`, `err`, `invalidState`       |
 
 Domain words are fixed: **trade** (one buy, optionally its sell), **open** / **closed** position,
 **cost** (buy value + buy fee), **pretax**, **tax**, **net**, **balance** (start + sum of net),
@@ -168,8 +235,10 @@ src/
     format.ts          Number/date formatting (de-DE, EUR)
     state.ts           Defaults + validation of untrusted state
     reducer.ts         Pure reducer and typed actions
-    errors.ts          Named error classes
-    storage/           StorageAdapter interface and implementations
+    result.ts          Result type and helpers (ok, err, map, flatMap)
+    errors.ts          AppError union and its constructors
+    fp.ts              pipe and other tiny FP helpers
+    storage/           StorageAdapter type and factory implementations
     *.test.ts          Tests, next to the module they test
   hooks/               React hooks (useAppState: reducer + persistence)
   components/          One component per file, with its .module.css beside it
@@ -178,6 +247,8 @@ src/
     global.css         Element resets and base styles only
   test/                Test setup and fixture builders
   App.tsx, main.tsx
+tools/
+  oxlint-plugin-fp.js  Lint rules for the functional style
 ```
 
 Rules that keep it that way:
@@ -187,8 +258,8 @@ Rules that keep it that way:
   function to `calc.ts`.
 - `src/lib` must not import from `components`, `hooks` or React.
 - Persistence goes through `StorageAdapter` only. Components and hooks never touch
-  `localStorage` directly. Adding Supabase means adding an adapter in `src/lib/storage/` and
-  selecting it in `createStorage()`.
+  `localStorage` directly. Adding Supabase means adding a `createSupabaseAdapter(client)` factory
+  in `src/lib/storage/` and selecting it in `createStorage()`.
 
 ## Money and dates
 
@@ -213,7 +284,8 @@ Rules that keep it that way:
   ```
 
   Actions describe what the user did (`logSell`), not how state changes (`setTrades`).
-  Unknown actions are a type error, enforced by an exhaustive `switch` with a `never` check.
+  The reducer returns a new state for every action and never mutates the old one. Unknown
+  actions are a type error, enforced by an exhaustive `switch` with a `never` check.
 
 - `useAppState` (in `src/hooks/`) wires the reducer to a `StorageAdapter`: it loads on mount,
   saves after each change, and exposes the save/load status. It is the only place that talks to
@@ -239,11 +311,12 @@ Rules that keep it that way:
 ### Forms
 
 - Inputs are controlled. Field values live in local component state **as raw strings**, exactly
-  as typed (`'0,91'`), so the user's formatting is never rewritten while typing.
+  as typed (`'0,91'`), so the user's formatting is never rewritten while typing. Update with a
+  new object (`setFields({ ...fields, [name]: value })`), never by mutating it.
 - Strings are parsed with `parseNumber` only when needed: on submit, and for live previews (the
   pre-tax preview in "Log sell").
-- Validation runs on submit and shows the first problem in the sheet's error line. It doesn't
-  throw. A valid submit dispatches one reducer action.
+- Validation is a pure function from the field strings to `Result<Action, string>`; on
+  submit, an `err` shows its message in the sheet's error line and an `ok` dispatches the action.
 - Initial values come from props (the trade being edited) and are formatted with `inputValue`.
 - No form library.
 
@@ -314,18 +387,41 @@ Rules that keep it that way:
 
 ## Errors
 
-- Expected failures throw named `Error` subclasses from `src/lib/errors.ts` (e.g.
-  `InvalidStateError` for bad stored or imported data, `StorageError` for a failed load/save).
-  Their `message` is written for the user, following the copy rules above.
-- Lib code throws; it doesn't catch and log. Errors are caught at the UI boundary (the
-  `useAppState` hook or an event handler), turned into visible state, and shown.
-- Storage adapters reject on failure; they never swallow errors.
-- The UI must show when data couldn't be saved or loaded. Never fail silently, and never overwrite
-  stored data you couldn't read.
-- Form input validation isn't exceptional: handlers check input and show the inline `.err`
-  message without throwing.
+Expected failures are values, not exceptions.
+
+- Fallible functions return `Result<T, E>` from `src/lib/result.ts`:
+
+  ```ts
+  export type Result<T, E> =
+    | { readonly ok: true; readonly value: T }
+    | { readonly ok: false; readonly error: E }
+  ```
+
+  Build them with `ok(value)` and `err(error)`, and chain them with `map` and `flatMap` or with
+  early returns on `!result.ok`. Async functions return `Promise<Result<T, E>>` and never reject
+  for expected failures.
+
+- Errors are a tagged union, `AppError`, in `src/lib/errors.ts`, created by constructor
+  functions:
+
+  ```ts
+  export type AppError =
+    | { readonly kind: 'invalidState'; readonly message: string }
+    | { readonly kind: 'storageUnavailable'; readonly message: string }
+    | { readonly kind: 'saveFailed'; readonly message: string }
+  ```
+
+  `message` is written for the user, following the copy rules. Handle errors with a `switch` on
+  `kind`.
+
+- `src/lib` never throws (`fp/no-throw`). Where a platform API can throw (`JSON.parse`,
+  `localStorage`), wrap it once at the edge, in the adapter, with `try`/`catch` that returns
+  `err(…)`, and nowhere else.
+- The UI turns `err` results into visible state. It must show when data couldn't be saved or
+  loaded; never fail silently, and never overwrite stored data you couldn't read.
+- Form validation returns a `Result` like everything else; see Forms.
 - `console.error` is for diagnostics in addition to a visible state, not instead of one.
-- Unexpected errors (bugs) are not caught just to hide them.
+- Unexpected errors (bugs) are not caught just to hide them. A crash is better than wrong numbers.
 
 ## Comments and documentation
 

@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc", "vitest"],
+  "plugins": ["react", "typescript", "oxc", "unicorn", "vitest"],
+  "jsPlugins": ["./tools/oxlint-plugin-fp.js"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn"
@@ -8,7 +9,23 @@
   "rules": {
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "no-param-reassign": ["error", { "props": true }],
+    "prefer-const": "error",
+    "no-var": "error",
+    "no-plusplus": "error",
+    "unicorn/no-array-for-each": "error",
+    "fp/no-class": "error",
+    "fp/no-this": "error",
+    "fp/no-let": "error",
+    "fp/no-loop": "error",
+    "fp/no-mutation": "error"
   },
-  "ignorePatterns": ["dist"]
+  "overrides": [
+    {
+      "files": ["src/lib/**/*.ts"],
+      "rules": { "fp/no-throw": "error" }
+    }
+  ],
+  "ignorePatterns": ["dist", "coverage"]
 }

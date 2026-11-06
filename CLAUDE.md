@@ -11,6 +11,8 @@ Trading log app: React + Vite + TypeScript 7, pnpm, oxlint, oxfmt, Vitest.
 
 ## Rules that matter most
 
+- Functional style: no classes, no `this`, no `let`, no loops, no mutation. Factories return
+  records of functions. Expected failures are `Result` values; `src/lib` never throws.
 - All money, tax and balance math lives in `src/lib/calc.ts`, with tests. Components never do
   arithmetic on money.
 - State changes go through the reducer in `src/lib/reducer.ts` (typed actions).
