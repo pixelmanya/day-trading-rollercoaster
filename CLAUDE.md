@@ -22,8 +22,12 @@ Trading log app: React + Vite + TypeScript 7, pnpm, oxlint, oxfmt, Vitest.
 - Styles use CSS Modules with camelCase classes, logical properties and tokens from
   `src/styles/tokens.css` only (colors, type, spacing, radii); stylelint enforces it.
 - `src/lib` functions take every input explicitly (no default params); domain types are readonly.
+- Naming: full words, 3+ characters, no abbreviations or vague names (`data`, `value`), verbs
+  first for functions, `is/has/…` for booleans, `on…` for callback props, `handle…` for handlers.
+- Layout: braces on every block; blank lines around blocks, multi-line statements and before
+  `return`. Run `pnpm lint:fix` to apply.
 - Keep UI copy and visuals identical to the original unless the task says otherwise.
-- Dates are local `YYYY-MM-DD` via `today()`; never `toISOString()` for dates.
+- Dates are local `YYYY-MM-DD` via `getToday()`; never `toISOString()` for dates.
 
 ## Workflow
 

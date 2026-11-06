@@ -11,7 +11,7 @@
  * - no-throw: no `throw`; return a Result instead (enabled for src/lib)
  */
 
-const MUTATING_METHODS = new Set([
+const mutatingMethods = new Set([
   'push',
   'pop',
   'shift',
@@ -27,7 +27,7 @@ const MUTATING_METHODS = new Set([
   'clear',
 ])
 
-const IMMUTABLE_ALTERNATIVE = {
+const immutableAlternatives = {
   push: 'spread: [...xs, x]',
   pop: 'xs.slice(0, -1) / xs.at(-1)',
   shift: 'xs.slice(1) / xs[0]',
@@ -45,12 +45,15 @@ const IMMUTABLE_ALTERNATIVE = {
 
 const report = (context, node, message) => context.report({ node, message })
 
-const rule = (description, create) => ({ meta: { type: 'problem', docs: { description } }, create })
+const createRule = (description, create) => ({
+  meta: { type: 'problem', docs: { description } },
+  create,
+})
 
 /** Root identifier of a member chain: `a.b.c` → `a`. */
-function rootName(node) {
+function getRootName(node) {
   return node.type === 'MemberExpression'
-    ? rootName(node.object)
+    ? getRootName(node.object)
     : node.type === 'Identifier'
       ? node.name
       : null
@@ -59,59 +62,74 @@ function rootName(node) {
 const plugin = {
   meta: { name: 'fp' },
   rules: {
-    'no-class': rule('Disallow classes', (context) => ({
+    'no-class': createRule('Disallow classes', (context) => ({
       ClassDeclaration: (node) =>
         report(context, node, 'No classes. Use functions and plain data.'),
       ClassExpression: (node) => report(context, node, 'No classes. Use functions and plain data.'),
     })),
 
-    'no-this': rule('Disallow this', (context) => ({
+    'no-this': createRule('Disallow this', (context) => ({
       ThisExpression: (node) => report(context, node, 'No `this`. Pass data as arguments instead.'),
     })),
 
-    'no-let': rule('Disallow let and var', (context) => ({
+    'no-let': createRule('Disallow let and var', (context) => ({
       VariableDeclaration: (node) => {
-        if (node.kind !== 'const' && node.kind !== 'using' && node.kind !== 'await using')
+        if (node.kind !== 'const' && node.kind !== 'using' && node.kind !== 'await using') {
           report(context, node, `No \`${node.kind}\`. Use \`const\` and derive new values.`)
+        }
       },
     })),
 
-    'no-loop': rule('Disallow loop statements', (context) => {
-      const msg = 'No loops. Use map/filter/reduce/flatMap or recursion.'
+    'no-loop': createRule('Disallow loop statements', (context) => {
+      const message = 'No loops. Use map/filter/reduce/flatMap or recursion.'
+
       return {
-        ForStatement: (node) => report(context, node, msg),
-        ForInStatement: (node) => report(context, node, msg),
-        ForOfStatement: (node) => report(context, node, msg),
-        WhileStatement: (node) => report(context, node, msg),
-        DoWhileStatement: (node) => report(context, node, msg),
+        ForStatement: (node) => report(context, node, message),
+        ForInStatement: (node) => report(context, node, message),
+        ForOfStatement: (node) => report(context, node, message),
+        WhileStatement: (node) => report(context, node, message),
+        DoWhileStatement: (node) => report(context, node, message),
       }
     }),
 
-    'no-mutation': rule('Disallow mutating data', (context) => ({
+    'no-mutation': createRule('Disallow mutating data', (context) => ({
       AssignmentExpression: (node) => {
-        if (node.left.type === 'MemberExpression')
+        if (node.left.type === 'MemberExpression') {
           report(context, node, 'Don’t mutate objects. Build a new one with spread.')
+        }
       },
       UpdateExpression: (node) =>
         report(context, node, `No \`${node.operator}\`. Derive a new value instead.`),
       UnaryExpression: (node) => {
-        if (node.operator === 'delete')
+        if (node.operator === 'delete') {
           report(context, node, 'No `delete`. Use destructuring: const { x, ...rest } = obj')
+        }
       },
       CallExpression: (node) => {
         const callee = node.callee
-        if (callee.type !== 'MemberExpression' || callee.computed) return
+
+        if (callee.type !== 'MemberExpression' || callee.computed) {
+          return
+        }
+
         const name = callee.property.name
-        if (!MUTATING_METHODS.has(name)) return
+
+        if (!mutatingMethods.has(name)) {
+          return
+        }
+
         // Allow the Web Storage / URLSearchParams style APIs on well-known globals
-        if (['localStorage', 'sessionStorage'].includes(rootName(callee.object))) return
-        report(context, node, `\`.${name}()\` mutates. Use ${IMMUTABLE_ALTERNATIVE[name]}.`)
+        if (['localStorage', 'sessionStorage'].includes(getRootName(callee.object))) {
+          return
+        }
+
+        report(context, node, `\`.${name}()\` mutates. Use ${immutableAlternatives[name]}.`)
       },
     })),
 
-    'no-throw': rule('Disallow throw', (context) => ({
+    'no-throw': createRule('Disallow throw', (context) => ({
       ThrowStatement: (node) =>
-        report(context, node, 'No `throw`. Return a Result: err({ kind, message }).'),
+        report(context, node, 'No `throw`. Return a Result: fail(createAppError(kind, message)).'),
     })),
   },
 }

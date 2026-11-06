@@ -1,3 +1,17 @@
+import { abbreviations } from './tools/oxlint-plugin-naming.js'
+
+const abbreviationPattern = Object.keys(abbreviations)
+  .map((word) => `${word}|${word[0].toUpperCase()}${word.slice(1)}`)
+  .join('|')
+
+/**
+ * camelCase, at least 3 characters, and no abbreviation as a word (closeBtn, errMsg) —
+ * the same word list as the naming lint for TS.
+ */
+const classNamePattern = new RegExp(
+  `^(?!(?:.*[a-z0-9])?(?:${abbreviationPattern})(?:[A-Z0-9]|$))[a-z][a-zA-Z0-9]{2,}$`,
+)
+
 /** @type {import('stylelint').Config} */
 export default {
   extends: ['stylelint-config-standard'],
@@ -5,8 +19,11 @@ export default {
   rules: {
     // camelCase classes, so CSS Modules read as styles.closeBtn
     'selector-class-pattern': [
-      '^[a-z][a-zA-Z0-9]*$',
-      { message: (s) => `Use camelCase class names (got "${s}")` },
+      classNamePattern,
+      {
+        message: (selector) =>
+          `Class names are camelCase, 3+ characters, no abbreviations (got "${selector}")`,
+      },
     ],
     // Pixel-exact rem values (12.5px = 0.78125rem) need 5 decimals
     'number-max-precision': 5,

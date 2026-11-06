@@ -1,7 +1,11 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "typescript", "oxc", "unicorn", "vitest"],
-  "jsPlugins": ["./tools/oxlint-plugin-fp.js"],
+  "jsPlugins": [
+    "./tools/oxlint-plugin-fp.js",
+    "./tools/oxlint-plugin-naming.js",
+    "./tools/oxlint-plugin-layout.js"
+  ],
   "categories": {
     "correctness": "error",
     "suspicious": "warn"
@@ -9,22 +13,42 @@
   "rules": {
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }],
-    "no-param-reassign": ["error", { "props": true }],
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ],
+    "no-param-reassign": [
+      "error",
+      {
+        "props": true
+      }
+    ],
     "prefer-const": "error",
     "no-var": "error",
     "no-plusplus": "error",
-    "unicorn/no-array-for-each": "error",
     "fp/no-class": "error",
     "fp/no-this": "error",
     "fp/no-let": "error",
     "fp/no-loop": "error",
-    "fp/no-mutation": "error"
+    "fp/no-mutation": "error",
+    "naming/min-length": "error",
+    "naming/casing": "error",
+    "naming/no-vague-names": "error",
+    "naming/no-abbreviations": "error",
+    "naming/boolean-prefix": "error",
+    "naming/handler-names": "error",
+    "naming/verb-first": "error",
+    "curly": ["error", "all"],
+    "layout/padding-lines": "error"
   },
   "overrides": [
     {
       "files": ["src/lib/**/*.ts"],
-      "rules": { "fp/no-throw": "error" }
+      "rules": {
+        "fp/no-throw": "error"
+      }
     }
   ],
   "ignorePatterns": ["dist", "coverage"]

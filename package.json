@@ -15,7 +15,8 @@
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "preview": "vite preview",
     "prepare": "lefthook install",
-    "lint:css": "stylelint \"**/*.css\""
+    "lint:css": "stylelint \"**/*.css\"",
+    "lint:fix": "oxlint --fix; oxfmt; oxlint --fix; stylelint --fix \"**/*.css\""
   },
   "dependencies": {
     "react": "19.3.1",

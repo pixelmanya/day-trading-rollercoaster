@@ -17,6 +17,7 @@ pnpm dev
 | `pnpm dev`          | Vite dev server                                       |
 | `pnpm format`       | Format everything with oxfmt                          |
 | `pnpm format:check` | Fail if anything is unformatted (CI)                  |
+| `pnpm lint:fix`     | Autofix lint issues (braces, blank lines) and format  |
 | `pnpm lint`         | oxlint (TS/TSX) + stylelint (CSS), warnings fail (CI) |
 | `pnpm typecheck`    | `tsc -b` (CI)                                         |
 | `pnpm test`         | Vitest once (CI); `pnpm test:watch` while working     |
@@ -37,14 +38,43 @@ oxfmt owns formatting; don't hand-format or argue about it in review. Config in 
 
 Set your editor to format on save with oxfmt (or run `pnpm format` before committing).
 
+### Braces and blank lines
+
+Code is laid out for reading. Two rules go beyond what the formatter does:
+
+- **Always braces.** Every `if`, `else` and loop body is a `{ … }` block, even a one-line
+  guard (`curly: all`).
+- **Blank lines separate units of thought.** A blank line is required between two statements
+  when either of them is a block statement (`if`, `switch`, `try`, a function or class
+  declaration), when either spans more than one line, and before every `return` that follows
+  other statements. At the top level, the same applies between declarations. Consecutive
+  single-line statements (and imports) may stay grouped. The first and last statement inside
+  `{}` need no blank line.
+
+```ts
+export function computeYearTax(pretaxTotal: number, settings: TaxSettings): number {
+  const taxable = Math.max(0, pretaxTotal - settings.allowance)
+  const rate = settings.taxRate / 100
+
+  if (taxable === 0) {
+    return 0
+  }
+
+  return taxable * rate
+}
+```
+
+Both are enforced by oxlint (`curly` and `layout/padding-lines` from
+`tools/oxlint-plugin-layout.js`) and fixed automatically by `pnpm lint:fix`.
+
 ## TypeScript
 
 - `strict` is on, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
   `noImplicitReturns` and `noPropertyAccessFromIndexSignature`. Don't loosen them per file.
 - No `any`; use `unknown` and narrow it. No non-null assertions (`!`) except on the root element
   in `main.tsx`; handle the `undefined` case instead.
-- Optional properties (`foo?: T`) mean "may be absent". If a value can be present-but-empty, type
-  it `T | null` (or `T | undefined`) explicitly.
+- Optional properties (`note?: string`) mean "may be absent". If a property can be
+  present-but-empty, type it `string | null` (or `string | undefined`) explicitly.
 - Untrusted data (storage, imported files, later the network) enters only through a validator
   (`parseState` in `src/lib/state.ts`) that turns `unknown` into a `Result` of typed state. Never cast
   parsed JSON with `as`.
@@ -58,7 +88,7 @@ Set your editor to format on save with oxfmt (or run `pnpm format` before commit
 
 ### Data and constants
 
-- Domain types are read-only: `readonly` fields and `readonly T[]`. The reducer and `calc.ts`
+- Domain types are read-only: `readonly` fields and `readonly Trade[]`. The reducer and `calc.ts`
   return new objects and never mutate their inputs.
 
   ```ts
@@ -97,10 +127,16 @@ Set your editor to format on save with oxfmt (or run `pnpm format` before commit
 - Guard clauses first, then the main path. No `else` after `return`.
 
   ```ts
-  function tradeFrom(v: unknown, at: string): Result<Trade, AppError> {
-    if (!isObject(v)) return err(invalidState(`${at} is not an object.`))
-    if (!isPositive(v['shares'])) return err(invalidState(`${at}: shares must be above 0.`))
-    return ok({ … })
+  function parseTrade(input: unknown, label: string): Result<Trade, AppError> {
+    if (!isRecord(input)) {
+      return fail(createAppError('invalidState', `${label} is not an object.`))
+    }
+
+    if (!isPositiveNumber(input['shares'])) {
+      return fail(createAppError('invalidState', `${label}: shares must be above 0.`))
+    }
+
+    return succeed({ … })
   }
   ```
 
@@ -143,7 +179,7 @@ helper.
 
   export function TradeRow({ trade, onEdit }: TradeRowProps) {
     function handleEdit() {
-      onEdit(trade.id)
+      onEdit(trade.tradeId)
     }
     …
   }
@@ -183,9 +219,12 @@ in objects with methods and hidden state.
 
   ```ts
   // Running balance after each closed trade
-  export function balanceSeries(closed: readonly ClosedResult[], start: number): readonly number[] {
-    return closed.reduce<readonly number[]>(
-      (pts, r) => [...pts, (pts.at(-1) ?? start) + r.net],
+  export function computeBalanceSeries(
+    closedTrades: readonly ClosedResult[],
+    start: number,
+  ): readonly number[] {
+    return closedTrades.reduce<readonly number[]>(
+      (balances, closedTrade) => [...balances, (balances.at(-1) ?? start) + closedTrade.net],
       [start],
     )
   }
@@ -194,7 +233,7 @@ in objects with methods and hidden state.
 - Accumulate with `reduce` into a fresh object or tuple; keyed totals use objects built with
   spread (`{ ...acc, [year]: total }`) rather than a `Map` that you `set`.
 - **Small composable functions.** Split a calculation into named steps and compose them; the
-  `pipe` helper in `src/lib/fp.ts` threads a value through several functions left to right.
+  `pipe` helper in `src/lib/fp.ts` threads an input through several functions left to right.
 - **No FP library.** Native array methods, spread, our `pipe` and our `Result` type cover what
   this app needs.
 - **Escape hatches** for imperative browser APIs (React refs, `<dialog>`, the DOM) are allowed
@@ -207,22 +246,61 @@ Enforced by oxlint: built-in rules (`no-param-reassign` with props, `prefer-cons
 
 ## Naming
 
-## Naming
+Names are for the next reader. A name says what a thing is or does, in full words, without
+needing the surrounding code to decode it. All of the rules below are enforced by oxlint
+(`tools/oxlint-plugin-naming.js`) for everything we declare: variables, functions, parameters,
+destructured bindings, imports, types, type parameters and interface properties.
 
-| Thing                         | Style              | Example                           |
-| ----------------------------- | ------------------ | --------------------------------- |
-| Components, types, interfaces | PascalCase         | `TradeSheet`, `ClosedResult`      |
-| Functions, variables, hooks   | camelCase          | `summarize`, `useAppState`        |
-| Module-level constants        | UPPER_SNAKE_CASE   | `STORAGE_KEY`, `DEFAULT_SETTINGS` |
-| Component files               | PascalCase         | `TradeSheet.tsx`                  |
-| Other source files            | camelCase          | `calc.ts`, `localStorage.ts`      |
-| CSS module classes            | camelCase          | `.closeBtn`                       |
-| Booleans                      | `is`/`has`/`can` … | `isClosed`, `hasError`            |
-| Factory functions             | `create…`          | `createLocalStorageAdapter`       |
-| Result constructors           | lowercase verbs    | `ok`, `err`, `invalidState`       |
+### Casing
+
+| Thing                                   | Style                 | Example                                   |
+| --------------------------------------- | --------------------- | ----------------------------------------- |
+| Variables, parameters, properties       | camelCase             | `closedTrades`, `sellPrice`               |
+| Functions and hooks                     | camelCase, verb first | `computeBalanceSeries`, `useAppState`     |
+| Components                              | PascalCase            | `TradeSheet`                              |
+| Types, interfaces, type parameters      | PascalCase            | `ClosedResult`, `Result<Output, Failure>` |
+| Module constants (primitive/`as const`) | UPPER_SNAKE_CASE      | `STORAGE_KEY`, `DEFAULT_SETTINGS`         |
+| Component files                         | PascalCase            | `TradeSheet.tsx`                          |
+| Other source files                      | camelCase             | `calc.ts`, `localStorage.ts`              |
+| CSS module classes                      | camelCase             | `.closeButton`                            |
+
+No snake_case, no leading or trailing underscores. Acronyms are words: `parseJson`, `tradeId`.
+
+### Length and words
+
+- **At least 3 characters, no exceptions.** No `i`, `t`, `e`, `x`, `id`, `ok`, `fn`, and no
+  single-letter generics: `index`, `trade`, `event`, `positionX`, `tradeId`, `isSuccess`,
+  `<Output, Failure>`. Callbacks name their parameter after the element:
+  `trades.map((trade) => …)`, `prices.reduce((total, price) => …)`.
+- **No vague names** for values: `data`, `item(s)`, `obj`, `object`, `val`, `value(s)`, `tmp`,
+  `temp`, `res`, `result`, `info`, `stuff`, `thing(s)`, `foo`, `bar`, `baz`. Name what it holds:
+  `trades`, `parsedState`, `saveOutcome`. (Type names like `Result` are fine.)
+- **No abbreviations** in any part of a name: `btn` → `button`, `msg` → `message`,
+  `idx` → `index`, `err` → `error`, `evt` → `event`, `el` → `element`, `cb` → `callback`,
+  `prev` → `previous`, `pct` → `percent`, `eur` → `euro`, `calc` → `calculate`, and so on (the
+  full list with suggestions is in the plugin). CSS class names follow the same list,
+  enforced by stylelint.
+- Ids are named after their entity: `tradeId`, not `id`.
+
+### Kinds of names
+
+- **Functions start with a verb**: `get`, `compute`, `calculate`, `format`, `parse`, `create`,
+  `build`, `validate`, `handle`, `load`, `save`, `to`, `is`/`has`, … (`computePositionCost`,
+  not `positionCost`; `getToday`, not `today`). Components and hooks (`use…`) are exempt.
+- **Booleans start with `is`, `has`, `can`, `should`, `was`, `will` or `did`**: variables,
+  parameters, properties and functions returning `boolean` or a type predicate
+  (`isClosed(trade): trade is ClosedTrade`, `hasError`, `isSuccess: true`).
+- **Callback props are `on…`** (`onSave`, `onClose`), and only callbacks may start with `on`.
+  JSX event attributes receive a named handler (`onClick={handleClick}`) or a forwarded prop
+  (`onClick={onClose}`), never an inline arrow.
+- **Factories are `create…`** (`createLocalStorageAdapter`, `createAppError`); Result
+  constructors are the verbs `succeed` and `fail`.
+- **Plurals for collections** (`trades`, `closedResults`), singular for one element (`trade`).
+
+### Domain words
 
 Domain words are fixed: **trade** (one buy, optionally its sell), **open** / **closed** position,
-**cost** (buy value + buy fee), **pretax**, **tax**, **net**, **balance** (start + sum of net),
+**cost** (buy amount + buy fee), **pretax**, **tax**, **net**, **balance** (start + sum of net),
 **cash** (balance − open cost), **allowance** (tax-free amount left this calendar year).
 
 ## Project structure
@@ -235,8 +313,8 @@ src/
     format.ts          Number/date formatting (de-DE, EUR)
     state.ts           Defaults + validation of untrusted state
     reducer.ts         Pure reducer and typed actions
-    result.ts          Result type and helpers (ok, err, map, flatMap)
-    errors.ts          AppError union and its constructors
+    result.ts          Result type and helpers (succeed, fail, mapSuccess, chainSuccess)
+    errors.ts          AppError union and createAppError
     fp.ts              pipe and other tiny FP helpers
     storage/           StorageAdapter type and factory implementations
     *.test.ts          Tests, next to the module they test
@@ -248,7 +326,9 @@ src/
   test/                Test setup and fixture builders
   App.tsx, main.tsx
 tools/
-  oxlint-plugin-fp.js  Lint rules for the functional style
+  oxlint-plugin-fp.js      Lint rules for the functional style
+  oxlint-plugin-naming.js  Lint rules for naming
+  oxlint-plugin-layout.js  Lint rule for blank lines around blocks
 ```
 
 Rules that keep it that way:
@@ -264,9 +344,10 @@ Rules that keep it that way:
 ## Money and dates
 
 - Amounts are euros as JavaScript numbers. Don't round in calculations; round only when
-  formatting for display (`eur`, `num`, `pct`, `signed` in `format.ts`).
+  formatting for display (`formatEuro`, `formatNumber`, `formatPercent`, `formatSignedEuro` in
+  `format.ts`).
 - Never compare money with `===` in tests; use `toBeCloseTo(expected, 6)`.
-- Dates are ISO `YYYY-MM-DD` strings in **local** time (`today()` in `format.ts`), never
+- Dates are ISO `YYYY-MM-DD` strings in **local** time (`getToday()` in `format.ts`), never
   `toISOString()`, which is UTC and gives yesterday's date shortly after midnight in Germany.
 - Tax years are calendar years taken from the sell date.
 
@@ -305,19 +386,19 @@ Rules that keep it that way:
   `{items.length && …}` (which renders `0`). Write `items.length > 0 &&`.
 - No nested ternaries in JSX. Anything beyond one level moves into a variable or subcomponent
   above the `return`.
-- List keys are domain ids (`key={trade.id}`), never the array index.
+- List keys are domain ids (`key={trade.tradeId}`), never the array index.
 - Keep JSX declarative: compute values above the `return`, not inline in attributes.
 
 ### Forms
 
 - Inputs are controlled. Field values live in local component state **as raw strings**, exactly
   as typed (`'0,91'`), so the user's formatting is never rewritten while typing. Update with a
-  new object (`setFields({ ...fields, [name]: value })`), never by mutating it.
+  new object (`setFields({ ...fields, [fieldName]: input })`), never by mutating it.
 - Strings are parsed with `parseNumber` only when needed: on submit, and for live previews (the
   pre-tax preview in "Log sell").
 - Validation is a pure function from the field strings to `Result<Action, string>`; on
   submit, an `err` shows its message in the sheet's error line and an `ok` dispatches the action.
-- Initial values come from props (the trade being edited) and are formatted with `inputValue`.
+- Initial values come from props (the trade being edited) and are formatted with `formatInputNumber`.
 - No form library.
 
 ## Styling
@@ -338,7 +419,8 @@ Rules that keep it that way:
 
 ### Selectors
 
-- Class names are camelCase (`.closeBtn`), so they read as `styles.closeBtn`.
+- Class names are camelCase, 3+ characters, no abbreviations (`.closeButton`), so they read as
+  `styles.closeButton`.
 - One class per styled element. Modules have no type or id selectors (`.row div` is not
   allowed); give the element its own class. Specificity stays flat.
 - Native CSS nesting, at most one level, for states and pseudo-elements (`&:hover`,
@@ -389,20 +471,21 @@ Rules that keep it that way:
 
 Expected failures are values, not exceptions.
 
-- Fallible functions return `Result<T, E>` from `src/lib/result.ts`:
+- Fallible functions return `Result<Output, Failure>` from `src/lib/result.ts`:
 
   ```ts
-  export type Result<T, E> =
-    | { readonly ok: true; readonly value: T }
-    | { readonly ok: false; readonly error: E }
+  export type Result<Output, Failure> =
+    | { readonly isSuccess: true; readonly output: Output }
+    | { readonly isSuccess: false; readonly error: Failure }
   ```
 
-  Build them with `ok(value)` and `err(error)`, and chain them with `map` and `flatMap` or with
-  early returns on `!result.ok`. Async functions return `Promise<Result<T, E>>` and never reject
+  Build them with `succeed(output)` and `fail(error)`, and chain them with `mapSuccess` and
+  `chainSuccess` or with early returns on `!loadOutcome.isSuccess`. Async functions return
+  `Promise<Result<Output, Failure>>` and never reject
   for expected failures.
 
-- Errors are a tagged union, `AppError`, in `src/lib/errors.ts`, created by constructor
-  functions:
+- Errors are a tagged union, `AppError`, in `src/lib/errors.ts`, created with
+  `createAppError(kind, message)`:
 
   ```ts
   export type AppError =
@@ -416,7 +499,7 @@ Expected failures are values, not exceptions.
 
 - `src/lib` never throws (`fp/no-throw`). Where a platform API can throw (`JSON.parse`,
   `localStorage`), wrap it once at the edge, in the adapter, with `try`/`catch` that returns
-  `err(…)`, and nowhere else.
+  `fail(…)`, and nowhere else.
 - The UI turns `err` results into visible state. It must show when data couldn't be saved or
   loaded; never fail silently, and never overwrite stored data you couldn't read.
 - Form validation returns a `Result` like everything else; see Forms.
@@ -437,16 +520,17 @@ Expected failures are values, not exceptions.
 Vitest for everything; Testing Library with jsdom for components.
 
 - Test files are named `*.test.ts(x)` and live beside the code under test.
-- Structure: one `describe` per function or component, `it` per behaviour, named as a sentence:
+- Structure: one `describe` per function or component, `test` per behaviour, named as a
+  sentence (`it` is too short for the naming rules):
 
   ```ts
   describe('closedResults', () => {
-    it('offsets a loss against earlier gains in the same year', () => { … })
+    test('offsets a loss against earlier gains in the same year', () => { … })
   })
   ```
 
 - Build fixtures with the helpers in `src/test/builders.ts` (`buy({ shares: 100, price: 1 })`,
-  `sell(trade, { price: 1.2, date: '2026-03-01' })`, `settings({ allowance: 0 })`) so a test
+  `sell(trade, { price: 1.2, date: '2026-03-01' })`, `buildSettings({ allowance: 0 })`) so a test
   shows only the numbers that matter. Comment the expected arithmetic when it isn't obvious.
 - `src/lib` has a 100 % line, branch and function coverage threshold, enforced in CI. Every edge
   case in `calc.ts` is covered: zero/negative results, year boundaries, allowance exactly reached,
