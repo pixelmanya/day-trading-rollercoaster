@@ -42,6 +42,7 @@ pnpm, oxlint, oxfmt, stylelint, Vitest.
 ## Workflow
 
 - Never push to `main`. Branch, then open a PR whose title is a Conventional Commit
-  (`feat: …`, `fix(calc): …`); it becomes the squash commit.
+  (`feat: …`, `fix(calc): …`). Every commit subject must be one too: PRs merge by squash or
+  rebase.
 - Fill in the PR template (Summary, Test plan).
 - Ask before adding a runtime dependency.

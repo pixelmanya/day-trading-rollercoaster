@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   pr-title:
@@ -13,14 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Check Conventional Commit format
+      # Squash merges use the PR title as the commit; rebase merges keep every commit.
+      # So the title and every commit subject must be Conventional Commits.
+      - name: Check PR title and commit subjects
         env:
+          GH_TOKEN: ${{ github.token }}
           TITLE: ${{ github.event.pull_request.title }}
+          COMMITS_URL: ${{ github.event.pull_request.commits_url }}
         run: |
           pattern='^(feat|fix|refactor|test|docs|style|chore|ci|build|perf)(\([a-z0-9-]+\))?!?: [a-z].*[^.]$'
-          if [[ "$TITLE" =~ $pattern ]]; then
-            echo "OK: $TITLE"
-          else
-            echo "::error::PR title must be a Conventional Commit, e.g. 'feat: add JSON export' (lowercase summary, no trailing period). Got: $TITLE"
-            exit 1
-          fi
+          status=0
+          check() {
+            if [[ "$2" =~ $pattern ]]; then
+              echo "OK ($1): $2"
+            else
+              echo "::error::$1 must be a Conventional Commit, e.g. 'feat: add JSON export' (lowercase summary, no trailing period). Got: $2"
+              status=1
+            fi
+          }
+          check "PR title" "$TITLE"
+          while IFS= read -r subject; do
+            check "Commit" "$subject"
+          done < <(gh api --paginate "$COMMITS_URL" --jq '.[].commit.message | split("\n")[0]')
+          exit $status
