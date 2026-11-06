@@ -22,6 +22,9 @@
   background: var(--field);
   border: var(--border-input) solid transparent;
   border-radius: var(--radius-12);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
 
   &:focus {
     outline: none;

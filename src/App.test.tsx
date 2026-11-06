@@ -71,7 +71,7 @@ describe('App', () => {
 
     expect(screen.getByText(/999,28.€ invested/)).toBeTruthy()
 
-    await user.click(screen.getByRole('button', { name: 'Log sell' }))
+    await user.click(screen.getByRole('button', { name: 'Sell' }))
     await user.type(getSheet().getByLabelText('Sell price'), '1,05')
 
     expect(getSheet().getByText(/Before tax/).textContent).toMatch(/\+150,47/)
@@ -106,9 +106,9 @@ describe('App', () => {
     await user.click(await screen.findByRole('button', { name: /KDK/ }))
     await user.click(getSheet().getByRole('button', { name: 'Reopen position' }))
 
-    expect(screen.getByRole('button', { name: 'Log sell' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Sell' })).toBeTruthy()
 
-    await user.click(screen.getByRole('button', { name: 'Edit' }))
+    await user.click(screen.getByRole('button', { name: 'Edit KDK' }))
     await user.click(getSheet().getByRole('button', { name: 'Delete trade' }))
     await user.click(getSheet().getByRole('button', { name: 'Tap again to delete' }))
 
@@ -130,7 +130,7 @@ describe('App', () => {
     await replaceText(user, getSheet().getByLabelText('Tax rate (%)'), '25')
     await user.click(getSheet().getByRole('button', { name: 'Save settings' }))
 
-    expect(screen.getByText(/Started with 500,00/)).toBeTruthy()
+    expect(screen.getByText(/from 500,00/)).toBeTruthy()
   })
 
   test('shows when a change could not be saved, until a retry succeeds', async () => {

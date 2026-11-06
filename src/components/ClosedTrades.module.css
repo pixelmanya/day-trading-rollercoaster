@@ -1,7 +1,8 @@
 .row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--space-2) var(--space-12);
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-12);
+  align-items: center;
   inline-size: 100%;
   padding-block: var(--space-14);
   padding-inline: var(--space-16);
@@ -9,10 +10,16 @@
   background: none;
   border: 0;
   border-block-start: var(--hairline) solid var(--grid);
+  transition: background-color var(--duration-fast) var(--ease-out);
+  animation: rise-in var(--duration-base) var(--ease-out) backwards;
 
   &:first-child {
     border-block-start: 0;
   }
+}
+
+.main {
+  min-inline-size: 0;
 }
 
 .ticker {
@@ -24,20 +31,27 @@
 .detail {
   display: block;
   font-size: var(--text-13);
-  font-weight: var(--weight-regular);
   color: var(--muted);
 }
 
-.returnRatio {
-  display: block;
-  font-size: var(--text-13);
-  color: var(--muted);
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: flex-end;
 }
 
-.amount {
+.net {
   font-size: var(--text-16);
   font-weight: var(--weight-bold);
-  text-align: end;
+}
+
+.returnChip {
+  padding-block: var(--space-2);
+  padding-inline: var(--space-6);
+  font-size: var(--text-12-5);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-pill);
 }
 
 .gain {
@@ -46,6 +60,23 @@
 
 .loss {
   color: var(--loss);
+}
+
+.gainChip {
+  color: var(--gain);
+  background: var(--gain-soft);
+}
+
+.lossChip {
+  color: var(--loss);
+  background: var(--loss-soft);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise-offset));
+  }
 }
 
 @media (hover: hover) {

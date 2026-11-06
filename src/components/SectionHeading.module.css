@@ -4,9 +4,27 @@
   justify-content: space-between;
   margin-block: var(--space-28) var(--space-10);
   margin-inline: var(--space-2);
-  font-size: var(--text-19);
+  font-size: var(--text-17);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-tight);
+}
+
+.title {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.count {
+  min-inline-size: var(--space-22);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-6);
+  font-size: var(--text-12-5);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  text-align: center;
+  background: var(--field);
+  border-radius: var(--radius-pill);
 }
 
 .meta {

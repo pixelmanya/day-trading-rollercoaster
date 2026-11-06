@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import { CHART_HEIGHT, CHART_WIDTH } from '../lib/chart'
 import type { ChartGeometry } from '../lib/chart'
 
@@ -5,6 +7,12 @@ import styles from './BalanceChart.module.css'
 
 interface BalanceChartProps {
   readonly geometry: ChartGeometry
+}
+
+type StepGeometry = Extract<ChartGeometry, { readonly kind: 'steps' }>
+
+interface StepChartProps {
+  readonly geometry: StepGeometry
 }
 
 const chartViewBox = `0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`
@@ -20,18 +28,25 @@ export function BalanceChart({ geometry }: BalanceChartProps) {
         aria-hidden="true"
       >
         <line
+          className={styles.baseline}
           x1="0"
           x2={CHART_WIDTH}
           y1={geometry.lineY}
           y2={geometry.lineY}
-          stroke="var(--line)"
-          strokeWidth="2.5"
           strokeDasharray="6 7"
           vectorEffect="non-scaling-stroke"
         />
       </svg>
     )
   }
+
+  // Keyed by the path, so the line draws in again whenever a trade closes
+  return <StepChart key={geometry.linePath} geometry={geometry} />
+}
+
+function StepChart({ geometry }: StepChartProps) {
+  const gradientId = useId()
+  const endPoint = `M${geometry.endX},${geometry.endY} h0`
 
   return (
     <svg
@@ -42,33 +57,28 @@ export function BalanceChart({ geometry }: BalanceChartProps) {
       role="img"
       aria-label="Balance after each closed trade"
     >
-      <path d={geometry.areaPath} fill="var(--area)" />
+      <defs>
+        <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="var(--line)" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="var(--line)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
       <line
+        className={styles.baseline}
         x1="0"
         x2={CHART_WIDTH}
         y1={geometry.baselineY}
         y2={geometry.baselineY}
-        stroke="var(--muted)"
-        strokeWidth="1"
         strokeDasharray="3 5"
         vectorEffect="non-scaling-stroke"
       />
-      <path
-        d={geometry.linePath}
-        fill="none"
-        stroke="var(--line)"
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-      {/* A zero-length line with round caps: unlike a circle, it stays round when the chart stretches */}
-      <path
-        d={`M${geometry.endX},${geometry.endY} h0`}
-        stroke="var(--line)"
-        strokeWidth="10"
-        strokeLinecap="round"
-        vectorEffect="non-scaling-stroke"
-      />
+      <g className={styles.reveal}>
+        <path d={geometry.areaPath} fill={`url(#${gradientId})`} />
+        <path className={styles.line} d={geometry.linePath} vectorEffect="non-scaling-stroke" />
+      </g>
+      {/* Zero-length lines with round caps stay round when the chart stretches */}
+      <path className={styles.pulse} d={endPoint} vectorEffect="non-scaling-stroke" />
+      <path className={styles.endPoint} d={endPoint} vectorEffect="non-scaling-stroke" />
     </svg>
   )
 }

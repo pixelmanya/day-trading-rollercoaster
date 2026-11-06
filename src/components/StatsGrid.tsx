@@ -15,25 +15,25 @@ interface StatProps {
   readonly tone: Tone | null
 }
 
-/** Six key figures: closed trades, win rate, average, free cash, fees and tax. */
+/** Six key figures, most important first: free cash, win rate, average, count, fees, tax. */
 export function StatsGrid({
   summary: { closedResults, winRate, averageNet, cash, fees, tax },
 }: StatsGridProps) {
   const averageTone = averageNet === null ? null : getTone(averageNet)
 
   return (
-    <div className={styles.stats}>
-      <Stat figure={String(closedResults.length)} label="closed trades" tone={null} />
+    <dl className={styles.stats}>
+      <Stat figure={formatEuro(cash)} label="cash free" tone={null} />
       <Stat figure={formatWinRate(winRate)} label="win rate" tone={null} />
       <Stat
         figure={formatOptionalSignedEuro(averageNet)}
         label="avg per trade"
         tone={averageTone}
       />
-      <Stat figure={formatEuro(cash)} label="cash free" tone={null} />
+      <Stat figure={String(closedResults.length)} label="closed trades" tone={null} />
       <Stat figure={formatEuro(fees)} label="fees paid" tone={null} />
       <Stat figure={formatEuro(tax)} label="tax so far" tone={null} />
-    </div>
+    </dl>
   )
 }
 
@@ -42,8 +42,8 @@ function Stat({ figure, label, tone }: StatProps) {
 
   return (
     <div className={styles.stat}>
-      <b className={figureClass}>{figure}</b>
-      <span className={styles.statLabel}>{label}</span>
+      <dt className={styles.statLabel}>{label}</dt>
+      <dd className={figureClass}>{figure}</dd>
     </div>
   )
 }

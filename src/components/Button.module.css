@@ -1,3 +1,16 @@
+.primary,
+.ghost,
+.danger,
+.quiet {
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+
+  &:active {
+    transform: scale(var(--press-scale));
+  }
+}
+
 .primary {
   flex: 1;
   padding: var(--space-14);

@@ -1,5 +1,6 @@
 import { formatEuro, formatNumber, formatShortDate } from '../lib/format'
 import type { OpenPosition } from '../lib/types'
+import { Icon } from './Icon'
 import { List } from './List'
 import { SectionHeading } from './SectionHeading'
 
@@ -18,13 +19,17 @@ interface OpenPositionRowProps {
   readonly onSell: (tradeId: string) => void
 }
 
-/** The positions still held, each with Edit and Log sell. */
+/** The positions still held, each with edit and sell. */
 export function OpenPositions({ positions, openCost, onEdit, onSell }: OpenPositionsProps) {
   const isEmpty = positions.length === 0
 
   return (
-    <>
-      <SectionHeading title="Open" meta={isEmpty ? '' : `${formatEuro(openCost)} invested`} />
+    <section aria-label="Open positions">
+      <SectionHeading
+        title="Open"
+        count={positions.length}
+        meta={isEmpty ? '' : `${formatEuro(openCost)} invested`}
+      />
       <List isEmpty={isEmpty} emptyText="No open positions. Log a buy to start the next round.">
         {positions.map((position) => (
           <OpenPositionRow
@@ -35,7 +40,7 @@ export function OpenPositions({ positions, openCost, onEdit, onSell }: OpenPosit
           />
         ))}
       </List>
-    </>
+    </section>
   )
 }
 
@@ -50,24 +55,27 @@ function OpenPositionRow({ position: { trade, cost }, onEdit, onSell }: OpenPosi
 
   return (
     <div className={styles.row}>
-      <div>
+      <div className={styles.main}>
         <div className={styles.ticker}>{trade.ticker}</div>
         <div className={styles.detail}>
-          {formatNumber(trade.shares, 0)} × {formatNumber(trade.buyPrice, 4)} € · bought{' '}
+          {formatNumber(trade.shares, 0)} × {formatNumber(trade.buyPrice, 4)} € · since{' '}
           {formatShortDate(trade.buyDate)}
         </div>
       </div>
-      <div className={styles.amount}>
-        {formatEuro(cost)}
-        <div className={styles.editDetail}>
-          <button type="button" className={styles.editButton} onClick={handleEdit}>
-            Edit
-          </button>
-        </div>
+      <div className={styles.amount}>{formatEuro(cost)}</div>
+      <div className={styles.actions}>
+        <button
+          type="button"
+          className={styles.editButton}
+          aria-label={`Edit ${trade.ticker}`}
+          onClick={handleEdit}
+        >
+          <Icon name="edit" />
+        </button>
+        <button type="button" className={styles.sellButton} onClick={handleSell}>
+          Sell
+        </button>
       </div>
-      <button type="button" className={styles.sellButton} onClick={handleSell}>
-        Log sell
-      </button>
     </div>
   )
 }

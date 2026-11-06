@@ -5,8 +5,12 @@
 }
 
 .empty {
-  padding-block: var(--space-18);
-  padding-inline: var(--space-16);
-  font-size: var(--text-14-5);
+  padding-block: var(--space-22);
+  padding-inline: var(--space-18);
+  font-size: var(--text-14);
   color: var(--muted);
+  text-align: center;
+  background: transparent;
+  border: var(--border-input) dashed var(--grid);
+  border-radius: var(--radius-16);
 }

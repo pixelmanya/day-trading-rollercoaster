@@ -4,6 +4,9 @@
 
 .logBuyButton {
   position: fixed;
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
   inset-block-end: calc(var(--space-20) + env(safe-area-inset-bottom));
   inset-inline-start: 50%;
   padding-block: var(--space-15);
@@ -16,6 +19,13 @@
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-fab);
   transform: translateX(-50%);
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+
+  &:active {
+    transform: translateX(-50%) scale(var(--press-scale));
+  }
 }
 
 @media (hover: hover) {
@@ -39,11 +49,15 @@
 
   .logBuyButton {
     position: static;
-    display: block;
+    display: flex;
     margin-inline-start: auto;
     padding-block: var(--space-12);
     padding-inline: var(--space-22);
     box-shadow: none;
     transform: none;
+
+    &:active {
+      transform: scale(var(--press-scale));
+    }
   }
 }

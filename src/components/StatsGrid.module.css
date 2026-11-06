@@ -1,22 +1,33 @@
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--hairline);
-  overflow: hidden;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-block-start: var(--space-14);
-  background: var(--grid);
+  background: var(--surface);
   border-radius: var(--radius-16);
 }
 
 .stat {
-  padding-block: var(--space-12) var(--space-11);
-  padding-inline: var(--space-12);
-  background: var(--surface);
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding-block: var(--space-14);
+  padding-inline: var(--space-14);
+  border-block-start: var(--hairline) solid var(--grid);
+  border-inline-start: var(--hairline) solid var(--grid);
+
+  &:nth-child(-n + 3) {
+    border-block-start: 0;
+  }
+
+  &:nth-child(3n + 1) {
+    border-inline-start: 0;
+  }
 }
 
 .statFigure {
-  display: block;
   font-size: var(--text-stat);
+  white-space: nowrap;
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-tight);
 }
@@ -34,7 +45,7 @@
   color: var(--loss);
 }
 
-/* Desktop: a strip along the bottom of the hero panel */
+/* Desktop: a strip along the bottom of the hero panel; one row when the panel is wide enough */
 @media (width >= 1024px) {
   .stats {
     margin-block-start: 0;
@@ -48,10 +59,28 @@
   }
 
   .statFigure {
-    font-size: var(--text-24);
+    font-size: var(--text-21);
   }
 
   .statLabel {
     font-size: var(--text-13);
+  }
+}
+
+/* One row of six when the hero panel (the container) is wide enough */
+@container summary (width >= 760px) {
+  .stats {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .stat {
+    padding-inline: var(--space-20);
+    border-block-start: 0;
+    border-inline-start: var(--hairline) solid var(--grid);
+  }
+
+  .stat:first-child {
+    padding-inline-start: var(--page-gutter-wide);
+    border-inline-start: 0;
   }
 }

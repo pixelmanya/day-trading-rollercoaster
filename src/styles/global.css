@@ -37,3 +37,15 @@ button {
     padding-block-end: env(safe-area-inset-bottom);
   }
 }
+
+/* Motion is decoration here: switch every animation and transition off when asked to */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

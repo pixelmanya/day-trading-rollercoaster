@@ -29,6 +29,7 @@
 
   .summaryColumn {
     position: sticky;
+    container: summary / inline-size;
     inset-block-start: 0;
     display: flex;
     flex-direction: column;
