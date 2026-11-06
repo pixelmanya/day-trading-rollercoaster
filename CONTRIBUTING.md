@@ -1,7 +1,7 @@
 # Contributing
 
 How this codebase is written and how changes get onto `main`. Tooling enforces what it can (oxfmt,
-oxlint, `tsc`, Vitest in CI); the rest is convention, checked in review.
+oxlint, stylelint, `tsc`, Vitest in CI); the rest is convention, checked in review.
 
 ## Setup
 
@@ -12,20 +12,20 @@ pnpm install
 pnpm dev
 ```
 
-| Script              | What it does                                      |
-| ------------------- | ------------------------------------------------- |
-| `pnpm dev`          | Vite dev server                                   |
-| `pnpm format`       | Format everything with oxfmt                      |
-| `pnpm format:check` | Fail if anything is unformatted (CI)              |
-| `pnpm lint`         | oxlint, warnings fail (CI)                        |
-| `pnpm typecheck`    | `tsc -b` (CI)                                     |
-| `pnpm test`         | Vitest once (CI); `pnpm test:watch` while working |
-| `pnpm build`        | Typecheck + production build (CI)                 |
-| `pnpm check`        | All of the above in CI order — run before pushing |
+| Script              | What it does                                          |
+| ------------------- | ----------------------------------------------------- |
+| `pnpm dev`          | Vite dev server                                       |
+| `pnpm format`       | Format everything with oxfmt                          |
+| `pnpm format:check` | Fail if anything is unformatted (CI)                  |
+| `pnpm lint`         | oxlint (TS/TSX) + stylelint (CSS), warnings fail (CI) |
+| `pnpm typecheck`    | `tsc -b` (CI)                                         |
+| `pnpm test`         | Vitest once (CI); `pnpm test:watch` while working     |
+| `pnpm build`        | Typecheck + production build (CI)                     |
+| `pnpm check`        | All of the above in CI order — run before pushing     |
 
 `pnpm install` also installs the git hooks (lefthook). On every commit they format staged files with
-oxfmt (and re-stage them) and lint them with oxlint. Don't skip them with `--no-verify`; if a
-hook is wrong, fix the hook.
+oxfmt (and re-stage them) and lint them with oxlint and stylelint. Don't skip them with
+`--no-verify`; if a hook is wrong, fix the hook.
 
 ## Formatting
 
@@ -56,14 +56,69 @@ Set your editor to format on save with oxfmt (or run `pnpm format` before commit
 - `null` means "deliberately empty" in data (e.g. `sellPrice: null` for an open position); avoid
   `undefined` in stored data so JSON round-trips are lossless.
 
+### Data and constants
+
+- Domain types are read-only: `readonly` fields and `readonly T[]`. The reducer and `calc.ts`
+  return new objects and never mutate their inputs.
+
+  ```ts
+  export interface Trade {
+    readonly id: string
+    readonly shares: number
+    …
+  }
+  ```
+
+- Constant tables and option lists use `as const satisfies …`, which keeps literal types and
+  still checks the shape:
+
+  ```ts
+  export const DEFAULT_SETTINGS = {
+    start: 1000,
+    taxRate: 26.375,
+    allowance: 1000,
+  } as const satisfies Settings
+  ```
+
+- Use `satisfies` rather than a type annotation when you want the narrower inferred type.
+
 ### Functions
 
 - Named and exported functions, including components and hooks, are `function` declarations:
   `export function summarize(…) {}`, `export function TradeRow(…) {}`.
 - Arrow functions are for callbacks, inline handlers and tiny one-line helpers inside a module.
 - Exported functions declare their return type; React components may rely on inference.
-- Prefer pure functions that take what they need as parameters (e.g. `today`) over reading
-  globals or the clock.
+- Exported functions in `src/lib` take every input explicitly, with no default parameters. That
+  includes the date: `summarize(trades, settings, today)`, never a hidden `new Date()`. Defaults
+  are fine in UI-level helpers and private functions.
+
+### Control flow
+
+- Guard clauses first, then the main path. No `else` after `return`, `throw` or `continue`.
+
+  ```ts
+  function tradeFrom(v: unknown): Trade {
+    if (!isObject(v)) throw new InvalidStateError('…')
+    if (!isPositive(v['shares'])) throw new InvalidStateError('…')
+    return { … }
+  }
+  ```
+
+- Use `??` and `?.` for null handling, not `||` (which also swallows `0` and `''`).
+- `switch` on discriminated unions ends with an exhaustive `never` check.
+
+### File layout
+
+Every `.ts`/`.tsx` file is ordered top-down, most important first:
+
+1. Imports (sorted by oxfmt)
+2. Exported types and interfaces, then module-private ones
+3. Module constants
+4. The main export(s): the component, hook or public functions
+5. Private helpers, at the bottom (function declarations are hoisted)
+
+One component per file; a small private subcomponent used only by it may live below it as a
+helper.
 
 ### Components and props
 
@@ -171,16 +226,74 @@ Rules that keep it that way:
 - Effects are for syncing with the outside world (storage, the `<dialog>` element), not for
   deriving state.
 
+### JSX
+
+- Either/or uses a ternary: `{isOpen ? <OpenRow … /> : <ClosedRow … />}`.
+- `&&` only with a real boolean on the left: `{hasError && <Banner … />}`, never
+  `{items.length && …}` (which renders `0`). Write `items.length > 0 &&`.
+- No nested ternaries in JSX. Anything beyond one level moves into a variable or subcomponent
+  above the `return`.
+- List keys are domain ids (`key={trade.id}`), never the array index.
+- Keep JSX declarative: compute values above the `return`, not inline in attributes.
+
+### Forms
+
+- Inputs are controlled. Field values live in local component state **as raw strings**, exactly
+  as typed (`'0,91'`), so the user's formatting is never rewritten while typing.
+- Strings are parsed with `parseNumber` only when needed: on submit, and for live previews (the
+  pre-tax preview in "Log sell").
+- Validation runs on submit and shows the first problem in the sheet's error line. It doesn't
+  throw. A valid submit dispatches one reducer action.
+- Initial values come from props (the trade being edited) and are formatted with `inputValue`.
+- No form library.
+
 ## Styling
 
+### Files and tokens
+
 - CSS Modules: `Component.module.css` next to `Component.tsx`, imported as `styles`.
-- Colors, surfaces and accents come **only** from tokens in `src/styles/tokens.css`
-  (`var(--ink)`, `var(--gain)`, …). No raw color values in modules. A new color is a new token
-  with both a light and a dark value.
-- Dark mode is handled by tokens under `@media (prefers-color-scheme: dark)`; modules should not
-  need their own dark-mode rules.
-- Respect `prefers-reduced-motion` for any animation.
-- Layout must work from 320 px wide with no horizontal scroll, and respect safe-area insets.
+- `src/styles/tokens.css` holds every design value: colors, type sizes and weights, spacing,
+  radii, line widths, shadows and durations. It is the **only** place raw colors and sizes
+  appear; stylelint enforces this.
+- Scales contain exactly the values the design uses, named by their pixel value (`--space-14`,
+  `--radius-22`, `--text-13-5`). Reuse a step before adding one; a new step is a design change
+  and goes in its own commit.
+- A new color is a new token with both a light and a dark value. Dark mode lives only in
+  `tokens.css`; modules never need their own `prefers-color-scheme` rules.
+- `src/styles/global.css` holds element resets and base styles (`body`, `button`, `input`,
+  `:focus-visible`). No component styles there.
+
+### Selectors
+
+- Class names are camelCase (`.closeBtn`), so they read as `styles.closeBtn`.
+- One class per styled element. Modules have no type or id selectors (`.row div` is not
+  allowed); give the element its own class. Specificity stays flat.
+- Native CSS nesting, at most one level, for states and pseudo-elements (`&:hover`,
+  `&[open]`, `&::backdrop`) and media queries.
+- Variants are separate classes combined in TSX (`className={`${styles.row} ${styles.gain}`}`).
+  No `!important`.
+
+### Properties
+
+- Logical properties: `margin-block-start`, `padding-inline`, `inset-inline-start`,
+  `border-block-start`, not top/right/bottom/left. stylelint enforces this.
+- Units: type sizes in `rem` (through `--text-*` tokens) so they follow the user's browser
+  font size; everything else in `px` through tokens. Fixed component dimensions (the chart's
+  `150px` height) may be raw `px`.
+- Declarations are grouped in this order, with no blank lines needed between groups:
+  1. Layout and position: `display`, `grid-*`, `flex-*`, `position`, `inset`, `z-index`
+  2. Box model: `inline-size`, `block-size`, `margin`, `padding`, `border`, `overflow`
+  3. Typography: `font-*`, `line-height`, `letter-spacing`, `text-*`, `color`
+  4. Visual: `background`, `border-radius`, `box-shadow`, `opacity`
+  5. Motion and interaction: `transition`, `animation`, `cursor`
+
+### Responsiveness and motion
+
+- Mobile-first. The app is a single column capped at `--content-max`; add `min-width` media
+  queries only when a larger screen needs a different layout.
+- Layout must work from 320 px wide with no horizontal scroll, and respect safe-area insets
+  (`env(safe-area-inset-*)`).
+- Every animation has a `prefers-reduced-motion: reduce` override that disables it.
 
 ## UI copy
 

@@ -9,3 +9,6 @@ pre-commit:
     lint:
       glob: '*.{ts,tsx,js,mjs}'
       run: pnpm exec oxlint --deny-warnings {staged_files}
+    stylelint:
+      glob: '*.css'
+      run: pnpm exec stylelint {staged_files}

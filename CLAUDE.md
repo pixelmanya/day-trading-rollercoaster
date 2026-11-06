@@ -17,7 +17,9 @@ Trading log app: React + Vite + TypeScript 7, pnpm, oxlint, oxfmt, Vitest.
 - Persistence goes only through `StorageAdapter` (`src/lib/storage/`), never `localStorage`
   directly.
 - Untrusted data (storage, imports) is validated with `parseState`; never cast JSON with `as`.
-- Styles use CSS Modules and tokens from `src/styles/tokens.css` only; no raw colors.
+- Styles use CSS Modules with camelCase classes, logical properties and tokens from
+  `src/styles/tokens.css` only (colors, type, spacing, radii); stylelint enforces it.
+- `src/lib` functions take every input explicitly (no default params); domain types are readonly.
 - Keep UI copy and visuals identical to the original unless the task says otherwise.
 - Dates are local `YYYY-MM-DD` via `today()`; never `toISOString()` for dates.
 
