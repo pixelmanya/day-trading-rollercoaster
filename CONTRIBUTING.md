@@ -605,6 +605,9 @@ Rules that keep it that way:
 ## Accessibility
 
 - Actions are `<button>`s, navigation is `<a>`. No clickable `<div>`s.
+- Icons never stand alone: every icon sits next to a visible text label (`⚙ Settings`, `✎ Edit`).
+  Icons are `aria-hidden`; if a button needs a more specific accessible name (`Edit RHM`), it
+  must contain the visible label.
 - Every input has a visible `<label>`. Numeric inputs use `inputMode="decimal"` and accept both
   `0,91` and `0.91`.
 - Keep the visible `:focus-visible` outline. Dialogs move focus to their first field.

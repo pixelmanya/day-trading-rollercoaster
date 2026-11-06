@@ -18,19 +18,27 @@ interface TradesColumnProps {
 export function TradesColumn({ summary, settings, onLogBuy, onEdit, onSell }: TradesColumnProps) {
   return (
     <div className={styles.column}>
-      {/* Floats over the page on phones, sits above the trades on desktop */}
-      <button type="button" className={styles.logBuyButton} onClick={onLogBuy}>
-        <Icon name="plus" />
-        Log a buy
-      </button>
-      <OpenPositions
-        positions={summary.openPositions}
-        openCost={summary.openCost}
-        onEdit={onEdit}
-        onSell={onSell}
-      />
-      <ClosedTrades closedResults={summary.closedResults} sumNet={summary.sumNet} onEdit={onEdit} />
-      <TaxFootnote settings={settings} />
+      <div className={styles.header}>
+        {/* Floats over the page on phones; top-right corner of the page on desktop */}
+        <button type="button" className={styles.logBuyButton} onClick={onLogBuy}>
+          <Icon name="plus" />
+          Log a buy
+        </button>
+      </div>
+      <div className={styles.content}>
+        <OpenPositions
+          positions={summary.openPositions}
+          openCost={summary.openCost}
+          onEdit={onEdit}
+          onSell={onSell}
+        />
+        <ClosedTrades
+          closedResults={summary.closedResults}
+          sumNet={summary.sumNet}
+          onEdit={onEdit}
+        />
+        <TaxFootnote settings={settings} />
+      </div>
     </div>
   )
 }

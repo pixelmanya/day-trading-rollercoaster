@@ -55,12 +55,12 @@ function OpenPositionRow({ position: { trade, cost }, onEdit, onSell }: OpenPosi
 
   return (
     <div className={styles.row}>
-      <div className={styles.main}>
-        <div className={styles.ticker}>{trade.ticker}</div>
-        <div className={styles.detail}>
-          {formatNumber(trade.shares, 0)} × {formatNumber(trade.buyPrice, 4)} € · since{' '}
-          {formatShortDate(trade.buyDate)}
-        </div>
+      <div className={styles.ticker}>{trade.ticker}</div>
+      <div className={styles.detail}>
+        <span>
+          {formatNumber(trade.shares, 0)} × {formatNumber(trade.buyPrice, 4)} €
+        </span>
+        <span className={styles.since}>since {formatShortDate(trade.buyDate)}</span>
       </div>
       <div className={styles.amount}>{formatEuro(cost)}</div>
       <div className={styles.actions}>
@@ -71,6 +71,7 @@ function OpenPositionRow({ position: { trade, cost }, onEdit, onSell }: OpenPosi
           onClick={handleEdit}
         >
           <Icon name="edit" />
+          Edit
         </button>
         <button type="button" className={styles.sellButton} onClick={handleSell}>
           Sell
