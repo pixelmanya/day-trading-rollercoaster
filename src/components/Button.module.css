@@ -1,0 +1,37 @@
+.primary {
+  flex: 1;
+  padding: var(--space-14);
+  font-size: var(--text-16);
+  font-weight: var(--weight-bold);
+  color: var(--on-accent);
+  background: var(--line);
+  border: 0;
+  border-radius: var(--radius-14);
+}
+
+.ghost {
+  padding-block: var(--space-14);
+  padding-inline: var(--space-18);
+  font-weight: var(--weight-semibold);
+  background: var(--field);
+  border: 0;
+  border-radius: var(--radius-14);
+}
+
+.danger {
+  padding-block: var(--space-14);
+  padding-inline: var(--space-4);
+  font-weight: var(--weight-semibold);
+  color: var(--loss);
+  background: none;
+  border: 0;
+}
+
+.quiet {
+  padding-block: var(--space-14);
+  padding-inline: var(--space-4);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  background: none;
+  border: 0;
+}

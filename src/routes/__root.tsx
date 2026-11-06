@@ -1,6 +1,7 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
+import globalStylesUrl from '../styles/global.css?url'
 import tokensUrl from '../styles/tokens.css?url'
 
 const FONT_URL =
@@ -17,6 +18,7 @@ export const Route = createRootRoute({
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       { rel: 'stylesheet', href: FONT_URL },
       { rel: 'stylesheet', href: tokensUrl },
+      { rel: 'stylesheet', href: globalStylesUrl },
     ],
   }),
   component: RootLayout,

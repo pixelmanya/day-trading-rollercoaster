@@ -7,6 +7,7 @@ import {
   computePositionCost,
   computeSellPretax,
   computeYearTax,
+  findTrade,
   getTone,
   isClosed,
   isOpen,
@@ -24,6 +25,15 @@ describe('isClosed and isOpen', () => {
 
     expect([isClosed(held), isOpen(held)]).toEqual([false, true])
     expect([isClosed(sold), isOpen(sold)]).toEqual([true, false])
+  })
+})
+
+describe('findTrade', () => {
+  test('finds a trade by id, or null', () => {
+    const trade = buy({ tradeId: 'a' })
+
+    expect(findTrade([trade], 'a')).toBe(trade)
+    expect(findTrade([trade], 'b')).toBeNull()
   })
 })
 

@@ -1,0 +1,22 @@
+.page {
+  max-inline-size: var(--content-max);
+  margin-inline: auto;
+  padding-block: var(--space-20);
+  padding-inline: var(--space-18);
+}
+
+.logBuyButton {
+  position: fixed;
+  inset-block-end: calc(var(--space-20) + env(safe-area-inset-bottom));
+  inset-inline-start: 50%;
+  padding-block: var(--space-15);
+  padding-inline: var(--space-28);
+  font-size: var(--text-16);
+  font-weight: var(--weight-bold);
+  color: var(--on-accent);
+  background: var(--line);
+  border: 0;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-fab);
+  transform: translateX(-50%);
+}

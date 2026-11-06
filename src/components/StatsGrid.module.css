@@ -1,0 +1,35 @@
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--hairline);
+  overflow: hidden;
+  margin-block-start: var(--space-14);
+  background: var(--grid);
+  border-radius: var(--radius-16);
+}
+
+.stat {
+  padding-block: var(--space-12) var(--space-11);
+  padding-inline: var(--space-12);
+  background: var(--surface);
+}
+
+.statFigure {
+  display: block;
+  font-size: var(--text-18);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.statLabel {
+  font-size: var(--text-12-5);
+  color: var(--muted);
+}
+
+.gain {
+  color: var(--gain);
+}
+
+.loss {
+  color: var(--loss);
+}

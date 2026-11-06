@@ -1,0 +1,16 @@
+.preview {
+  margin-block-start: var(--space-14);
+  padding-block: var(--space-12);
+  padding-inline: var(--space-14);
+  font-size: var(--text-14-5);
+  background: var(--field);
+  border-radius: var(--radius-12);
+}
+
+.gain {
+  color: var(--gain);
+}
+
+.loss {
+  color: var(--loss);
+}

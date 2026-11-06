@@ -1,0 +1,7 @@
+.chart {
+  display: block;
+  overflow: visible;
+  inline-size: 100%;
+  block-size: 150px;
+  margin-block-start: var(--space-14);
+}
