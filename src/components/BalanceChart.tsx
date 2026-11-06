@@ -1,10 +1,14 @@
-import { useChartHover } from '../hooks/useChartHover'
+import type { ReactNode } from 'react'
+
+import type { ChartInteraction } from '../hooks/useChartInteraction'
 import { getTone } from '../lib/calc'
-import { CHART_HEIGHT, CHART_WIDTH, toTooltipPosition } from '../lib/chart'
+import { CHART_HEIGHT, CHART_WIDTH, pickLabelIndices, toTooltipPosition } from '../lib/chart'
 import type { ChartGeometry, ChartPoint } from '../lib/chart'
 import { formatEuro, formatShortDate, formatSignedEuro } from '../lib/format'
 import type { RangePoint } from '../lib/ranges'
+import type { SelectionSummary } from '../lib/selection'
 import type { Tone } from '../lib/types'
+import { BalanceAxis, DateAxis } from './ChartAxes'
 import { ChartTooltip } from './ChartTooltip'
 import { LineChartGraphic } from './LineChartGraphic'
 
@@ -14,19 +18,24 @@ type LineGeometry = Extract<ChartGeometry, { readonly kind: 'line' }>
 
 interface BalanceChartProps {
   readonly geometry: ChartGeometry
-  /** The points behind the geometry, for tooltips: same order and count. */
+  /** The points behind the geometry, for tooltips and labels: same order and count. */
   readonly points: readonly RangePoint[]
+  readonly interaction: ChartInteraction
+  readonly selected: SelectionSummary | null
 }
 
 interface InteractiveChartProps {
   readonly geometry: LineGeometry
   readonly points: readonly RangePoint[]
+  readonly interaction: ChartInteraction
+  readonly selected: SelectionSummary | null
 }
 
 const chartViewBox = `0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`
+const MAX_DATE_LABELS = 4
 
-/** The balance over time: a line you can hover, touch or step through with arrow keys. */
-export function BalanceChart({ geometry, points }: BalanceChartProps) {
+/** The balance over time: hover, touch or arrow through it; drag to measure a stretch. */
+export function BalanceChart({ geometry, points, interaction, selected }: BalanceChartProps) {
   if (geometry.kind === 'flat') {
     return (
       <div className={styles.chartArea}>
@@ -51,14 +60,23 @@ export function BalanceChart({ geometry, points }: BalanceChartProps) {
   }
 
   // Keyed by the path, so the line draws in again whenever the data or range changes
-  return <InteractiveChart key={geometry.linePath} geometry={geometry} points={points} />
+  return (
+    <InteractiveChart
+      key={geometry.linePath}
+      geometry={geometry}
+      points={points}
+      interaction={interaction}
+      selected={selected}
+    />
+  )
 }
 
-function InteractiveChart({ geometry, points }: InteractiveChartProps) {
-  const hover = useChartHover(geometry.points)
+function InteractiveChart({ geometry, points, interaction, selected }: InteractiveChartProps) {
+  const { hoveredIndex } = interaction
   const lastIndex = points.length - 1
-  const focusIndex = hover.hoveredIndex ?? lastIndex
-  const { hoveredPoint, hoveredPosition } = findHovered(hover.hoveredIndex, { geometry, points })
+  const focusIndex = hoveredIndex ?? lastIndex
+  const hoveredPoint = hoveredIndex === null ? undefined : points.at(hoveredIndex)
+  const hoveredPosition = hoveredIndex === null ? undefined : geometry.points.at(hoveredIndex)
 
   return (
     <div
@@ -66,16 +84,56 @@ function InteractiveChart({ geometry, points }: InteractiveChartProps) {
       // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- no native element draws a chart; the slider role makes its points reachable by keyboard and screen readers
       role="slider"
       tabIndex={0}
-      aria-label="Balance after each closed trade"
+      aria-label="Balance after each closed trade. Shift and arrow keys select a stretch."
       aria-valuemin={0}
       aria-valuemax={lastIndex}
       aria-valuenow={focusIndex}
       aria-valuetext={describePoint(points.at(focusIndex))}
-      onPointerMove={hover.handlePointerMove}
-      onPointerDown={hover.handlePointerMove}
-      onPointerLeave={hover.handlePointerLeave}
-      onKeyDown={hover.handleKeyDown}
-      onBlur={hover.handleBlur}
+      onKeyDown={interaction.handleKeyDown}
+      onBlur={interaction.handleBlur}
+    >
+      <ChartPlot
+        geometry={geometry}
+        interaction={interaction}
+        selected={selected}
+        hoveredPoint={hoveredPoint}
+      >
+        {hoveredPoint && hoveredPosition ? (
+          <ChartTooltip
+            point={hoveredPoint}
+            position={toTooltipPosition(hoveredPosition, findPreviousPoint(geometry, hoveredIndex))}
+          />
+        ) : null}
+      </ChartPlot>
+      <BalanceAxis ticks={geometry.ticks} />
+      <DateAxis
+        points={points}
+        positions={geometry.points}
+        labelIndices={pickLabelIndices(points.length, MAX_DATE_LABELS)}
+      />
+    </div>
+  )
+}
+
+interface ChartPlotProps {
+  readonly geometry: LineGeometry
+  readonly interaction: ChartInteraction
+  readonly selected: SelectionSummary | null
+  readonly hoveredPoint: RangePoint | undefined
+  /** Overlays positioned in percent of the plot, such as the tooltip. */
+  readonly children: ReactNode
+}
+
+/** The drawing itself; pointer positions are measured against it, so they match the points. */
+function ChartPlot({ geometry, interaction, selected, hoveredPoint, children }: ChartPlotProps) {
+  return (
+    // oxlint-disable-next-line jsx-a11y/no-static-element-interactions -- pointer gestures on the plot; the surrounding slider offers the same by keyboard
+    <div
+      className={styles.plot}
+      onPointerDown={interaction.handlePointerDown}
+      onPointerMove={interaction.handlePointerMove}
+      onPointerUp={interaction.handlePointerUp}
+      onPointerLeave={interaction.handlePointerLeave}
     >
       <svg
         className={styles.chart}
@@ -85,41 +143,14 @@ function InteractiveChart({ geometry, points }: InteractiveChartProps) {
       >
         <LineChartGraphic
           geometry={geometry}
-          hoveredIndex={hover.hoveredIndex}
+          hoveredIndex={interaction.hoveredIndex}
           hoveredTone={getHoveredTone(hoveredPoint)}
+          selected={selected}
         />
       </svg>
-      {hoveredPoint && hoveredPosition ? (
-        <ChartTooltip
-          point={hoveredPoint}
-          position={toTooltipPosition(
-            hoveredPosition,
-            findPreviousPoint(geometry, hover.hoveredIndex),
-          )}
-        />
-      ) : null}
+      {children}
     </div>
   )
-}
-
-interface HoveredPoint {
-  readonly hoveredPoint: RangePoint | undefined
-  readonly hoveredPosition: ChartPoint | undefined
-}
-
-/** The hovered point's data and position, or undefined for both when nothing is hovered. */
-function findHovered(
-  hoveredIndex: number | null,
-  { geometry, points }: InteractiveChartProps,
-): HoveredPoint {
-  if (hoveredIndex === null) {
-    return { hoveredPoint: undefined, hoveredPosition: undefined }
-  }
-
-  return {
-    hoveredPoint: points.at(hoveredIndex),
-    hoveredPosition: geometry.points.at(hoveredIndex),
-  }
 }
 
 /** The point before `index`, whose slope leads into it; null for the first point. */

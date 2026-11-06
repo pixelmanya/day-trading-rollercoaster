@@ -1,8 +1,19 @@
 const euroFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })
 
+const wholeEuroFormatter = new Intl.NumberFormat('de-DE', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+})
+
 /** Format euros the German way: 1234.5 → "1.234,50 €". */
 export function formatEuro(amount: number): string {
   return euroFormatter.format(amount)
+}
+
+/** Format whole euros for axis labels: 1250 → "1.250 €". */
+export function formatWholeEuro(amount: number): string {
+  return wholeEuroFormatter.format(amount)
 }
 
 /** Format a number with exactly `digits` decimals: (1234.5, 2) → "1.234,50". */

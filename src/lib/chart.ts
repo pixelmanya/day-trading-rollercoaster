@@ -9,6 +9,23 @@ const HEADROOM = 0.15
 /** Where the tooltip flips to the left of its point, as a share of the width. */
 const TOOLTIP_FLIP_RATIO = 0.6
 
+/** Steps a tick interval can take, times a power of ten. */
+const NICE_STEPS = [1, 2, 2.5, 5, 10] as const
+/** About this many balance labels on the y axis. */
+const Y_TICK_TARGET = 4
+
+/** A balance label on the y axis: its amount and height in viewBox units. */
+export interface ChartTick {
+  readonly amount: number
+  readonly positionY: number
+}
+
+/** A selected stretch of the chart, in viewBox units. */
+export interface ChartBand {
+  readonly left: number
+  readonly width: number
+}
+
 /** A balance point in viewBox units. */
 export interface ChartPoint {
   readonly positionX: number
@@ -47,11 +64,16 @@ export type ChartGeometry =
       readonly endY: number
       /** One point per balance, in the order given. */
       readonly points: readonly ChartPoint[]
+      /** Rounded balances to label on the y axis, inside the visible range. */
+      readonly ticks: readonly ChartTick[]
     }
 
 interface ChartScale {
   readonly toX: (index: number) => number
   readonly toY: (amount: number) => number
+  /** Lowest and highest visible balance, headroom included. */
+  readonly bottom: number
+  readonly top: number
 }
 
 interface LineTrace {
@@ -67,7 +89,7 @@ export function computeChartGeometry(balances: readonly number[], start: number)
     return { kind: 'flat', lineY: CHART_HEIGHT / 2 }
   }
 
-  const { toX, toY } = createChartScale(balances, start)
+  const { toX, toY, bottom, top } = createChartScale(balances, start)
   const firstTrace: LineTrace = { last: firstBalance, segments: [] }
 
   const { last: lastBalance, segments } = laterBalances.reduce(
@@ -89,7 +111,74 @@ export function computeChartGeometry(balances: readonly number[], start: number)
     endX,
     endY: toY(lastBalance),
     points: balances.map((amount, index) => ({ positionX: toX(index), positionY: toY(amount) })),
+    ticks: computeNiceTicks(bottom, top, Y_TICK_TARGET).map((amount) => ({
+      amount,
+      positionY: toY(amount),
+    })),
   }
+}
+
+/**
+ * Round values between `low` and `high` for axis labels, about `target` of them, spaced by
+ * 1, 2, 2.5 or 5 times a power of ten: (1012, 1188, 4) → [1050, 1100, 1150].
+ */
+export function computeNiceTicks(low: number, high: number, target: number): readonly number[] {
+  const roughStep = (high - low) / target
+  const magnitude = 10 ** Math.floor(Math.log10(roughStep))
+  const step = Math.min(...NICE_STEPS.filter((nice) => nice * magnitude >= roughStep)) * magnitude
+  const first = Math.ceil(low / step) * step
+  const count = Math.floor((high - first) / step) + 1
+
+  // Rounding keeps float noise (1100.0000000002) out of the labels
+  return [...Array.from({ length: count }).keys()].map((index) =>
+    Number((first + index * step).toFixed(6)),
+  )
+}
+
+/**
+ * Indices of points to label on the x axis: at most `maxLabels`, evenly spread, always the
+ * first and the last.
+ */
+export function pickLabelIndices(count: number, maxLabels: number): readonly number[] {
+  if (count <= maxLabels) {
+    return [...Array.from({ length: count }).keys()]
+  }
+
+  const spread = [...Array.from({ length: maxLabels }).keys()].map((slot) =>
+    Math.round((slot * (count - 1)) / (maxLabels - 1)),
+  )
+
+  return [...new Set(spread)]
+}
+
+/** Path through the points from index `fromIndex` to `toIndex`, inclusive. */
+export function computeSegmentPath(
+  points: readonly ChartPoint[],
+  fromIndex: number,
+  toIndex: number,
+): string {
+  return points
+    .slice(fromIndex, toIndex + 1)
+    .map(
+      ({ positionX, positionY }, offset) => `${offset === 0 ? 'M' : 'L'}${positionX},${positionY}`,
+    )
+    .join(' ')
+}
+
+/** The band between two points, for shading a selection; null if either is missing. */
+export function computeSelectionBand(
+  points: readonly ChartPoint[],
+  fromIndex: number,
+  toIndex: number,
+): ChartBand | null {
+  const [start] = points.slice(fromIndex, fromIndex + 1)
+  const [end] = points.slice(toIndex, toIndex + 1)
+
+  if (start === undefined || end === undefined) {
+    return null
+  }
+
+  return { left: start.positionX, width: end.positionX - start.positionX }
 }
 
 /**
@@ -171,8 +260,20 @@ function createChartScale(balances: readonly number[], start: number): ChartScal
   const innerHeight = CHART_HEIGHT - 2 * CHART_PADDING
 
   return {
+    bottom,
+    top,
     toX: (index) => CHART_PADDING + (innerWidth * index) / lastIndex,
     toY: (amount) =>
       CHART_HEIGHT - CHART_PADDING - (innerHeight * (amount - bottom)) / (top - bottom),
   }
+}
+
+/** A horizontal viewBox position as a percentage of the chart's width. */
+export function toWidthPercent(positionX: number): number {
+  return (positionX / CHART_WIDTH) * 100
+}
+
+/** A vertical viewBox position as a percentage of the chart's height. */
+export function toHeightPercent(positionY: number): number {
+  return (positionY / CHART_HEIGHT) * 100
 }

@@ -100,6 +100,11 @@
   --column-amount: 116px;
   --column-result: 190px;
   --chart-min-wide: 120px;
+
+  /* Chart axes: the balance labels' column and the date labels' row */
+  --axis-gutter: 52px;
+  --axis-row: 22px;
+  --selection-opacity: 0.1;
   --text-display-wide: clamp(4rem, 5.6vw, 7rem);
   --text-24: 1.5rem;
   --dialog-max: 480px;

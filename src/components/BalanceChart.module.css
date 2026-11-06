@@ -1,9 +1,19 @@
 .chartArea {
   position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--axis-gutter);
+  grid-template-rows: auto var(--axis-row);
   margin-block-start: var(--space-14);
   border-radius: var(--radius-6);
   cursor: crosshair;
   touch-action: pan-y;
+}
+
+/* The drawing; pointer positions and axis labels are measured against it */
+.plot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart {
@@ -71,6 +81,57 @@
   stroke-linecap: round;
 }
 
+/* A measured stretch: a soft band behind it and its own slopes in colour */
+.selectionBand {
+  fill: var(--line);
+  opacity: var(--selection-opacity);
+  animation: fade-in var(--duration-fast) var(--ease-out);
+}
+
+.selectionLine {
+  fill: none;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.balanceAxis {
+  position: relative;
+  font-size: var(--text-12-5);
+  color: var(--muted);
+}
+
+.balanceLabel {
+  position: absolute;
+  inset-inline-start: var(--space-8);
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.dateAxis {
+  position: relative;
+  font-size: var(--text-12-5);
+  color: var(--muted);
+}
+
+/* Centered under its point; the first and last stay inside the chart */
+.dateLabel {
+  position: absolute;
+  inset-block-end: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+
+  &:first-child {
+    transform: none;
+  }
+
+  &:last-child {
+    transform: translateX(-100%);
+  }
+}
+
 .gain {
   stroke: var(--gain);
 }
@@ -115,8 +176,8 @@
 /* Desktop: the chart fills whatever height the hero panel leaves */
 @media (width >= 1024px) {
   .chartArea {
-    display: flex;
     flex: 1;
+    grid-template-rows: minmax(0, 1fr) var(--axis-row);
     align-self: stretch;
     min-block-size: var(--chart-min-wide);
     margin-block-start: var(--space-28);

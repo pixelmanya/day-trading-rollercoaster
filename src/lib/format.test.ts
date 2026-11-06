@@ -7,6 +7,7 @@ import {
   formatPercent,
   formatShortDate,
   formatSignedEuro,
+  formatWholeEuro,
   formatWinRate,
   getToday,
 } from './format'
@@ -66,5 +67,11 @@ describe('getToday', () => {
   test('uses the local calendar date, also late in the evening', () => {
     expect(getToday(new Date(2026, 10, 5, 23, 30))).toBe('2026-11-05')
     expect(getToday(new Date(2026, 0, 1, 0, 15))).toBe('2026-01-01')
+  })
+})
+
+describe('formatWholeEuro', () => {
+  test('drops the cents for axis labels', () => {
+    expect(formatWholeEuro(1250)).toBe(`1.250${EURO}`)
   })
 })

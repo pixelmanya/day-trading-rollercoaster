@@ -46,36 +46,6 @@
   animation: rise-in var(--duration-base) var(--ease-out);
 }
 
-.delta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-8);
-  align-items: center;
-  margin-block-start: var(--space-12);
-  font-size: var(--text-14);
-}
-
-.chip {
-  padding-block: var(--space-2);
-  padding-inline: var(--space-8);
-  font-weight: var(--weight-semibold);
-  border-radius: var(--radius-pill);
-}
-
-.gain {
-  color: var(--gain);
-  background: var(--gain-soft);
-}
-
-.loss {
-  color: var(--loss);
-  background: var(--loss-soft);
-}
-
-.from {
-  color: var(--muted);
-}
-
 .chartNote {
   margin-block-start: var(--space-4);
   font-size: var(--text-13);
@@ -107,10 +77,5 @@
   .balance {
     margin-block-start: var(--space-14);
     font-size: var(--text-display-wide);
-  }
-
-  .delta {
-    margin-block-start: var(--space-16);
-    font-size: var(--text-16);
   }
 }
