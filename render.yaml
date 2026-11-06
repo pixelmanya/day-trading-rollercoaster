@@ -1,0 +1,21 @@
+# Render blueprint: the production web service, plus a preview of it for every pull request.
+# Connect once in the Render dashboard: New → Blueprint → this repository.
+services:
+  - type: web
+    name: day-trading-rollercoaster
+    runtime: node
+    # Free instances sleep when idle; the first request after a pause takes a few seconds
+    plan: free
+    region: frankfurt
+    # pnpm comes from the packageManager field in package.json, via corepack
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start
+    healthCheckPath: /
+    # Deploy main only after its CI checks pass
+    autoDeployTrigger: checksPass
+    # A separate, temporary copy of this service for each pull request, with its own URL
+    previews:
+      generation: automatic
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
