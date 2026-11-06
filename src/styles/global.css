@@ -30,3 +30,10 @@ button {
   outline-offset: var(--focus-offset);
   border-radius: var(--radius-6);
 }
+
+/* Desktop has no floating "Log a buy" button to scroll past */
+@media (width >= 1024px) {
+  body {
+    padding-block-end: env(safe-area-inset-bottom);
+  }
+}

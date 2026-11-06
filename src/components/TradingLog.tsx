@@ -3,14 +3,12 @@ import { useState } from 'react'
 import { summarize } from '../lib/calc'
 import type { Action } from '../lib/reducer'
 import type { ReadySession } from '../lib/session'
-import { ClosedTrades } from './ClosedTrades'
 import { Hero } from './Hero'
 import { LogSheet } from './LogSheet'
 import type { SheetRequest } from './LogSheet'
-import { OpenPositions } from './OpenPositions'
 import { SaveErrorBanner } from './SaveErrorBanner'
 import { StatsGrid } from './StatsGrid'
-import { TaxFootnote } from './TaxFootnote'
+import { TradesColumn } from './TradesColumn'
 
 import styles from './TradingLog.module.css'
 
@@ -60,25 +58,23 @@ export function TradingLog({
   return (
     <>
       <main className={styles.page}>
-        {saveError === null ? null : <SaveErrorBanner error={saveError} onRetry={onRetrySave} />}
-        <Hero summary={summary} start={settings.start} onOpenSettings={handleOpenSettings} />
-        <StatsGrid summary={summary} />
-        <OpenPositions
-          positions={summary.openPositions}
-          openCost={summary.openCost}
+        {saveError === null ? null : (
+          <div className={styles.banner}>
+            <SaveErrorBanner error={saveError} onRetry={onRetrySave} />
+          </div>
+        )}
+        <div className={styles.summaryColumn}>
+          <Hero summary={summary} start={settings.start} onOpenSettings={handleOpenSettings} />
+          <StatsGrid summary={summary} />
+        </div>
+        <TradesColumn
+          summary={summary}
+          settings={settings}
+          onLogBuy={handleLogBuy}
           onEdit={handleEdit}
           onSell={handleSell}
         />
-        <ClosedTrades
-          closedResults={summary.closedResults}
-          sumNet={summary.sumNet}
-          onEdit={handleEdit}
-        />
-        <TaxFootnote settings={settings} />
       </main>
-      <button type="button" className={styles.logBuyButton} onClick={handleLogBuy}>
-        Log a buy
-      </button>
       <LogSheet
         request={sheetRequest}
         appState={appState}

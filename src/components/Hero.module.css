@@ -72,3 +72,9 @@
   font-size: var(--text-13);
   color: var(--muted);
 }
+
+@media (hover: hover) {
+  .settingsButton:hover {
+    color: var(--ink);
+  }
+}

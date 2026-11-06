@@ -39,6 +39,9 @@
   --text-19: 1.1875rem;
   --text-21: 1.3125rem;
   --text-display: clamp(2.75rem, 13vw, 4rem);
+
+  /* Stat figures shrink on very narrow phones instead of clipping */
+  --text-stat: clamp(0.875rem, 4.6vw, 1.125rem);
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
@@ -85,11 +88,19 @@
 
   /* Layout */
   --content-max: 560px;
+
+  /* Desktop dashboard (from 1024px): overall width and the summary column */
+  --content-max-wide: 1120px;
+  --summary-column: 440px;
+  --dialog-max: 480px;
   --grid-cell: 22px;
 
   /* Elevation and motion */
   --shadow-fab: 0 8px 24px -8px var(--line);
   --duration-sheet: 0.22s;
+
+  /* Hover feedback on pointer devices */
+  --hover-opacity: 0.88;
   --sheet-offset: 24px;
 }
 

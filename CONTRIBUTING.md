@@ -574,8 +574,13 @@ Rules that keep it that way:
 
 ### Responsiveness and motion
 
-- Mobile-first. The app is a single column capped at `--content-max`; add `min-width` media
-  queries only when a larger screen needs a different layout.
+- Mobile-first. Phones get a single column capped at `--content-max`. From 1024 px wide the app
+  is a two-column dashboard (summary left and sticky, trades right) and sheets become centered
+  dialogs. Use exactly that one breakpoint, written `@media (width >= 1024px)`; don't add others
+  without a design reason.
+- Hover styles go inside `@media (hover: hover)`, so touch screens never get stuck hover states.
+  Use `--hover-opacity` for filled buttons and a color or background change for text buttons
+  and rows. Every interactive element gets hover feedback.
 - Layout must work from 320 px wide with no horizontal scroll, and respect safe-area insets
   (`env(safe-area-inset-*)`).
 - Every animation has a `prefers-reduced-motion: reduce` override that disables it.

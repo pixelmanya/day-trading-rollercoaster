@@ -16,7 +16,7 @@
 
 .statFigure {
   display: block;
-  font-size: var(--text-18);
+  font-size: var(--text-stat);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-tight);
 }

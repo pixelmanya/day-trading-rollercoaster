@@ -23,3 +23,9 @@
   border: 0;
   border-radius: var(--radius-pill);
 }
+
+@media (hover: hover) {
+  .retryButton:hover {
+    opacity: var(--hover-opacity);
+  }
+}

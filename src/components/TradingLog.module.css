@@ -5,18 +5,23 @@
   padding-inline: var(--space-18);
 }
 
-.logBuyButton {
-  position: fixed;
-  inset-block-end: calc(var(--space-20) + env(safe-area-inset-bottom));
-  inset-inline-start: 50%;
-  padding-block: var(--space-15);
-  padding-inline: var(--space-28);
-  font-size: var(--text-16);
-  font-weight: var(--weight-bold);
-  color: var(--on-accent);
-  background: var(--line);
-  border: 0;
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-fab);
-  transform: translateX(-50%);
+.banner {
+  grid-column: 1 / -1;
+}
+
+/* Desktop: summary on the left (sticky), trades on the right */
+@media (width >= 1024px) {
+  .page {
+    display: grid;
+    grid-template-columns: minmax(0, var(--summary-column)) minmax(0, 1fr);
+    gap: var(--space-28);
+    align-items: start;
+    max-inline-size: var(--content-max-wide);
+    padding-block: var(--space-28);
+  }
+
+  .summaryColumn {
+    position: sticky;
+    inset-block-start: var(--space-28);
+  }
 }
