@@ -53,3 +53,16 @@
   font-size: var(--text-13-5);
   color: var(--muted);
 }
+
+/* Desktop: a centered dialog instead of a bottom sheet */
+@media (width >= 1024px) {
+  .dialog {
+    max-inline-size: var(--dialog-max);
+    margin: auto;
+  }
+
+  .sheet {
+    padding-block: var(--space-22);
+    border-radius: var(--radius-24);
+  }
+}

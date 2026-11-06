@@ -35,3 +35,15 @@
   background: none;
   border: 0;
 }
+
+@media (hover: hover) {
+  .primary:hover,
+  .ghost:hover {
+    opacity: var(--hover-opacity);
+  }
+
+  .danger:hover,
+  .quiet:hover {
+    text-decoration: underline;
+  }
+}
