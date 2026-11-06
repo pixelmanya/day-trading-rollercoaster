@@ -14,9 +14,11 @@ interface ChartTooltipProps {
 /** The hovered point: date and ticker, the trade's result, and the balance after it. */
 export function ChartTooltip({
   point: { balance, closedResult },
-  position: { left, top, isFlipped },
+  position: { left, top, isFlipped, placement },
 }: ChartTooltipProps) {
-  const className = isFlipped ? `${styles.tooltip} ${styles.flipped}` : styles.tooltip
+  // Only flipped tooltips move above or below their point
+  const placementClass = isFlipped && placement !== 'middle' ? styles[placement] : ''
+  const className = [styles.tooltip, isFlipped ? styles.flipped : '', placementClass].join(' ')
 
   return (
     <div className={className} style={{ insetInlineStart: `${left}%`, insetBlockStart: `${top}%` }}>

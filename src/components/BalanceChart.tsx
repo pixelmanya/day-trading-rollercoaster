@@ -6,11 +6,11 @@ import { formatEuro, formatShortDate, formatSignedEuro } from '../lib/format'
 import type { RangePoint } from '../lib/ranges'
 import type { Tone } from '../lib/types'
 import { ChartTooltip } from './ChartTooltip'
-import { StepChartGraphic } from './StepChartGraphic'
+import { LineChartGraphic } from './LineChartGraphic'
 
 import styles from './BalanceChart.module.css'
 
-type StepGeometry = Extract<ChartGeometry, { readonly kind: 'steps' }>
+type LineGeometry = Extract<ChartGeometry, { readonly kind: 'line' }>
 
 interface BalanceChartProps {
   readonly geometry: ChartGeometry
@@ -19,13 +19,13 @@ interface BalanceChartProps {
 }
 
 interface InteractiveChartProps {
-  readonly geometry: StepGeometry
+  readonly geometry: LineGeometry
   readonly points: readonly RangePoint[]
 }
 
 const chartViewBox = `0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`
 
-/** The balance over time: a step line you can hover, touch or step through with arrow keys. */
+/** The balance over time: a line you can hover, touch or step through with arrow keys. */
 export function BalanceChart({ geometry, points }: BalanceChartProps) {
   if (geometry.kind === 'flat') {
     return (
@@ -83,14 +83,20 @@ function InteractiveChart({ geometry, points }: InteractiveChartProps) {
         preserveAspectRatio="none"
         aria-hidden="true"
       >
-        <StepChartGraphic
+        <LineChartGraphic
           geometry={geometry}
           hoveredIndex={hover.hoveredIndex}
           hoveredTone={getHoveredTone(hoveredPoint)}
         />
       </svg>
       {hoveredPoint && hoveredPosition ? (
-        <ChartTooltip point={hoveredPoint} position={toTooltipPosition(hoveredPosition)} />
+        <ChartTooltip
+          point={hoveredPoint}
+          position={toTooltipPosition(
+            hoveredPosition,
+            findPreviousPoint(geometry, hover.hoveredIndex),
+          )}
+        />
       ) : null}
     </div>
   )
@@ -114,6 +120,15 @@ function findHovered(
     hoveredPoint: points.at(hoveredIndex),
     hoveredPosition: geometry.points.at(hoveredIndex),
   }
+}
+
+/** The point before `index`, whose slope leads into it; null for the first point. */
+function findPreviousPoint({ points }: LineGeometry, index: number | null): ChartPoint | null {
+  if (index === null || index < 1) {
+    return null
+  }
+
+  return points.at(index - 1) ?? null
 }
 
 /** Gain or loss colour for a hovered trade; null for the starting point or no hover. */
