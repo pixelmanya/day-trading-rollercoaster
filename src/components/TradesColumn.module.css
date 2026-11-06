@@ -1,3 +1,7 @@
+.column {
+  display: block;
+}
+
 .logBuyButton {
   position: fixed;
   inset-block-end: calc(var(--space-20) + env(safe-area-inset-bottom));
@@ -20,8 +24,19 @@
   }
 }
 
-/* Desktop: a regular header button above the trades */
+/* Desktop: trades centered in the right half, both ways; "Log a buy" as a header button */
 @media (width >= 1024px) {
+  .column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    inline-size: 100%;
+    max-inline-size: calc(var(--trades-max-wide) + 2 * var(--page-gutter-wide));
+    min-block-size: 100dvh;
+    margin-inline: auto;
+    padding: var(--page-gutter-wide);
+  }
+
   .logBuyButton {
     position: static;
     display: block;

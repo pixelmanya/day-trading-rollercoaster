@@ -574,11 +574,12 @@ Rules that keep it that way:
 
 ### Responsiveness and motion
 
-- Mobile-first. Phones get a single column capped at `--content-max`. From 1024 px wide the app
-  is a two-column dashboard of equal halves (summary left and sticky, trades right), filling the
-  window up to `--content-max-wide` and centered beyond it, and sheets become centered
-  dialogs. Use exactly that one breakpoint, written `@media (width >= 1024px)`; don't add others
-  without a design reason.
+- Mobile-first. Phones get a single column capped at `--content-max`. From 1024 px wide the hero
+  becomes a full-height panel from the left screen edge to the middle (balance, chart filling the
+  remaining height, stats strip at the bottom; it stays put while the page scrolls), and the
+  trades sit in the right half, centered both ways. Sheets become centered dialogs. Use exactly
+  that one breakpoint, written `@media (width >= 1024px)`; don't add others without a design
+  reason.
 - Hover styles go inside `@media (hover: hover)`, so touch screens never get stuck hover states.
   Use `--hover-opacity` for filled buttons and a color or background change for text buttons
   and rows. Every interactive element gets hover feedback.

@@ -6,9 +6,13 @@
   margin-block-start: var(--space-14);
 }
 
-/* Desktop: the chart spans half the window, so it gets more height to keep its shape */
+/* Desktop: the chart fills whatever height the hero panel leaves */
 @media (width >= 1024px) {
   .chart {
-    block-size: var(--chart-height-wide);
+    flex: 1;
+    align-self: stretch;
+    block-size: auto;
+    min-block-size: var(--chart-min-wide);
+    margin-block-start: var(--space-28);
   }
 }

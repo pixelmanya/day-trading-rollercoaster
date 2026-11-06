@@ -89,10 +89,12 @@
   /* Layout */
   --content-max: 560px;
 
-  /* Desktop dashboard (from 1024px): fills the window up to this width, then stays centered */
-  --content-max-wide: 1800px;
+  /* Desktop (from 1024px): full-bleed hero on the left half, trades centered on the right */
   --page-gutter-wide: clamp(var(--space-28), 4vw, var(--space-60));
-  --chart-height-wide: 260px;
+  --trades-max-wide: 680px;
+  --chart-min-wide: 220px;
+  --text-display-wide: clamp(4rem, 5.6vw, 7rem);
+  --text-24: 1.5rem;
   --dialog-max: 480px;
   --grid-cell: 22px;
 

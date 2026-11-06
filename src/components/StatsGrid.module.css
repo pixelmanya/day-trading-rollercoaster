@@ -33,3 +33,25 @@
 .loss {
   color: var(--loss);
 }
+
+/* Desktop: a strip along the bottom of the hero panel */
+@media (width >= 1024px) {
+  .stats {
+    margin-block-start: 0;
+    border-block-start: var(--hairline) solid var(--grid);
+    border-radius: 0;
+  }
+
+  .stat {
+    padding-block: var(--space-20);
+    padding-inline: var(--page-gutter-wide);
+  }
+
+  .statFigure {
+    font-size: var(--text-24);
+  }
+
+  .statLabel {
+    font-size: var(--text-13);
+  }
+}

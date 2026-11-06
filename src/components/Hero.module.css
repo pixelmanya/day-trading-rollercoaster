@@ -78,3 +78,34 @@
     color: var(--ink);
   }
 }
+
+/* Desktop: the hero panel runs from the screen edge to the middle; the chart takes the rest */
+@media (width >= 1024px) {
+  .hero {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    min-block-size: 0;
+    padding: var(--page-gutter-wide);
+    border-radius: 0;
+  }
+
+  .heroTop {
+    align-self: stretch;
+  }
+
+  .title {
+    font-size: var(--text-16);
+  }
+
+  .balance {
+    margin-block-start: var(--space-22);
+    font-size: var(--text-display-wide);
+  }
+
+  .delta {
+    margin-block-start: var(--space-12);
+    font-size: var(--text-19);
+  }
+}
