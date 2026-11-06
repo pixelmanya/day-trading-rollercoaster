@@ -41,7 +41,8 @@ CI checks pass, and every pull request gets its own preview URL, posted on the P
 To connect it (once): in the Render dashboard choose **New → Blueprint**, pick this repository,
 and apply the blueprint. Render validates `render.yaml` and creates the service.
 
-Previews spin up a few minutes after a PR is opened or updated and stop when it closes.
+Previews spin up a few minutes after a PR is opened or updated and stop when it closes. A PR
+opened before the Render service existed gets its preview on its next push.
 
 How the code is written, and how changes get onto `main`, is described in
 [CONTRIBUTING.md](CONTRIBUTING.md).
