@@ -257,7 +257,8 @@
             "skipBlankLines": true,
             "skipComments": true
           }
-        ]
+        ],
+        "fp/no-throw": "off"
       }
     },
     {
