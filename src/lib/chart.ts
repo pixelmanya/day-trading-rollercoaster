@@ -15,11 +15,18 @@ export interface ChartPoint {
   readonly positionY: number
 }
 
-/** Tooltip anchor in percent of the chart's box, and whether it opens to the left. */
+/** Where a tooltip sits next to its point, vertically. */
+export type TooltipPlacement = 'middle' | 'above' | 'below'
+
+/**
+ * Tooltip anchor in percent of the chart's box. It opens to the right of its point; near the
+ * right edge it flips left and moves above or below the point, away from the highlighted slope.
+ */
 export interface TooltipPosition {
   readonly left: number
   readonly top: number
   readonly isFlipped: boolean
+  readonly placement: TooltipPlacement
 }
 
 /** SVG geometry of the balance chart, in viewBox units. */
@@ -30,8 +37,8 @@ export type ChartGeometry =
       readonly lineY: number
     }
   | {
-      /** A step line: the balance changes at each closed trade. */
-      readonly kind: 'steps'
+      /** Straight lines from balance to balance: a mountain silhouette of the account. */
+      readonly kind: 'line'
       readonly linePath: string
       readonly areaPath: string
       /** Height of the start budget, drawn as a dashed baseline. */
@@ -47,8 +54,8 @@ interface ChartScale {
   readonly toY: (amount: number) => number
 }
 
-interface StepTrace {
-  readonly previous: number
+interface LineTrace {
+  readonly last: number
   readonly segments: readonly string[]
 }
 
@@ -61,15 +68,12 @@ export function computeChartGeometry(balances: readonly number[], start: number)
   }
 
   const { toX, toY } = createChartScale(balances, start)
-  const firstTrace: StepTrace = { previous: firstBalance, segments: [] }
+  const firstTrace: LineTrace = { last: firstBalance, segments: [] }
 
-  const { previous: lastBalance, segments } = laterBalances.reduce(
-    ({ previous, segments: traced }, amount, offset) => ({
-      previous: amount,
-      segments: [
-        ...traced,
-        `L${toX(offset + 1)},${toY(previous)} L${toX(offset + 1)},${toY(amount)}`,
-      ],
+  const { last: lastBalance, segments } = laterBalances.reduce(
+    ({ segments: traced }, amount, offset) => ({
+      last: amount,
+      segments: [...traced, `L${toX(offset + 1)},${toY(amount)}`],
     }),
     firstTrace,
   )
@@ -78,7 +82,7 @@ export function computeChartGeometry(balances: readonly number[], start: number)
   const endX = toX(laterBalances.length)
 
   return {
-    kind: 'steps',
+    kind: 'line',
     linePath,
     areaPath: `${linePath} L${endX},${CHART_HEIGHT} L${toX(0)},${CHART_HEIGHT} Z`,
     baselineY: toY(start),
@@ -89,19 +93,17 @@ export function computeChartGeometry(balances: readonly number[], start: number)
 }
 
 /**
- * The step a trade drew, to highlight it: the jump at its point, then the run to the next point.
+ * The slope a trade drew, to highlight it: from the balance before it to the balance after.
  * Empty for the starting point (index 0) or an index outside the points.
  */
 export function computeHighlightPath(points: readonly ChartPoint[], index: number): string {
-  const [previous, current, next] = points.slice(Math.max(index - 1, 0), index + 2)
+  const [previous, current] = points.slice(Math.max(index - 1, 0), index + 1)
 
   if (index < 1 || previous === undefined || current === undefined) {
     return ''
   }
 
-  const run = next === undefined ? '' : ` L${next.positionX},${current.positionY}`
-
-  return `M${current.positionX},${previous.positionY} L${current.positionX},${current.positionY}${run}`
+  return `M${previous.positionX},${previous.positionY} L${current.positionX},${current.positionY}`
 }
 
 /** Index of the point closest to a horizontal position given as a share (0–1) of the width. */
@@ -129,13 +131,32 @@ export function getSteppedIndex(current: number | null, step: number, count: num
   return Math.min(count - 1, Math.max(0, (current ?? count - 1) + step))
 }
 
-/** Where to anchor a point's tooltip, in percent of the chart's box. */
-export function toTooltipPosition({ positionX, positionY }: ChartPoint): TooltipPosition {
+/**
+ * Where to anchor a point's tooltip, in percent of the chart's box.
+ *
+ * @param previous The point before it, whose slope leads in from the left; null for the first.
+ */
+export function toTooltipPosition(
+  { positionX, positionY }: ChartPoint,
+  previous: ChartPoint | null,
+): TooltipPosition {
+  const isFlipped = positionX > CHART_WIDTH * TOOLTIP_FLIP_RATIO
+
   return {
     left: (positionX / CHART_WIDTH) * 100,
     top: (positionY / CHART_HEIGHT) * 100,
-    isFlipped: positionX > CHART_WIDTH * TOOLTIP_FLIP_RATIO,
+    isFlipped,
+    placement: isFlipped ? getFlippedPlacement(positionY, previous) : 'middle',
   }
+}
+
+/** Above the point when its slope rises into it (comes from lower on screen), else below. */
+function getFlippedPlacement(positionY: number, previous: ChartPoint | null): TooltipPlacement {
+  if (previous === null) {
+    return 'middle'
+  }
+
+  return previous.positionY >= positionY ? 'above' : 'below'
 }
 
 function createChartScale(balances: readonly number[], start: number): ChartScale {

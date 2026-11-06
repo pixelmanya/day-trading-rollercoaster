@@ -16,8 +16,17 @@
   animation: tooltip-in var(--duration-fast) var(--ease-out);
 }
 
+/* Flipped tooltips sit left of the point, above or below the slope that leads into it */
 .flipped {
   transform: translate(calc(-100% - var(--space-14)), -50%);
+
+  &.above {
+    transform: translate(calc(-100% - var(--space-8)), calc(-100% - var(--space-8)));
+  }
+
+  &.below {
+    transform: translate(calc(-100% - var(--space-8)), var(--space-8));
+  }
 }
 
 .title {

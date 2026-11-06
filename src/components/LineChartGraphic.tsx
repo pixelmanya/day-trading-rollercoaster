@@ -6,15 +6,15 @@ import type { Tone } from '../lib/types'
 
 import styles from './BalanceChart.module.css'
 
-interface StepChartGraphicProps {
-  readonly geometry: Extract<ChartGeometry, { readonly kind: 'steps' }>
+interface LineChartGraphicProps {
+  readonly geometry: Extract<ChartGeometry, { readonly kind: 'line' }>
   readonly hoveredIndex: number | null
-  /** Colour of the hovered trade's step; null for the starting point or no hover. */
+  /** Colour of the hovered trade's slope; null for the starting point or no hover. */
   readonly hoveredTone: Tone | null
 }
 
-/** The SVG content of the step chart: fill, line, baseline, and the hover highlight. */
-export function StepChartGraphic({ geometry, hoveredIndex, hoveredTone }: StepChartGraphicProps) {
+/** The SVG content of the line chart: fill, line, baseline, and the hover highlight. */
+export function LineChartGraphic({ geometry, hoveredIndex, hoveredTone }: LineChartGraphicProps) {
   const gradientId = useId()
   const hovered = hoveredIndex === null ? undefined : geometry.points.at(hoveredIndex)
   const endPoint = `M${geometry.endX},${geometry.endY} h0`
