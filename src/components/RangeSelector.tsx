@@ -24,11 +24,25 @@ const rangeLabels = {
   ALL: 'All',
 } as const satisfies Record<ChartRange, string>
 
-/** Chart time ranges as a row of toggle buttons: 1D · 1W · 1M · 3M · YTD · 1Y · All. */
+/** The track's inner width (inside its padding), which the equal options share. */
+const innerWidth = '(100% - 2 * var(--space-2))'
+const optionCount = CHART_RANGES.length
+
+/** Compact segmented control for the chart range, with a pill that slides to the selection. */
 export function RangeSelector({ selected, onSelect }: RangeSelectorProps) {
+  const selectedIndex = CHART_RANGES.indexOf(selected)
+
   return (
     <fieldset className={styles.selector}>
       <legend className={styles.legend}>Chart range</legend>
+      <span
+        className={styles.indicator}
+        style={{
+          insetInlineStart: `calc(var(--space-2) + ${innerWidth} * ${selectedIndex} / ${optionCount})`,
+          inlineSize: `calc(${innerWidth} / ${optionCount})`,
+        }}
+        aria-hidden="true"
+      />
       {CHART_RANGES.map((range) => (
         <RangeButton
           key={range}
