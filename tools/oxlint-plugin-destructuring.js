@@ -6,7 +6,9 @@
  * (`trade.shares`, `trade.buyPrice`) must be destructured in the parameter list instead:
  * `({ shares, buyPrice }) => …`. Parameters are left alone when they are used whole (passed on,
  * returned, used in a type predicate), when a property is called as a method (destructuring
- * would lose `this`), read with `?.` or a computed key, or when they are arrays or primitives.
+ * would lose `this`), read with `?.` or a computed key, when they are arrays or primitives, or
+ * when one property is tested in a condition while others are read (a likely discriminated
+ * union such as Result, which TypeScript can only narrow while it's whole).
  * Fixable with `oxlint --fix` when no destructured name collides with another name.
  */
 
@@ -145,6 +147,37 @@ const reservedWords = new Set([
   'eval',
 ])
 
+const conditionParents = {
+  IfStatement: ({ test }, child) => test === child,
+  ConditionalExpression: ({ test }, child) => test === child,
+  LogicalExpression: ({ left }, child) => left === child,
+  WhileStatement: ({ test }, child) => test === child,
+}
+
+/** True when `node` sits inside a condition, below its own function. */
+function isInCondition(node) {
+  const { parent } = node
+  const type = getNodeType(parent)
+
+  if (parent == null || functionTypes.has(type)) {
+    return false
+  }
+
+  const isCondition = Object.hasOwn(conditionParents, type) && conditionParents[type](parent, node)
+
+  return isCondition || isInCondition(parent)
+}
+
+/**
+ * True when the parameter looks like a discriminated union: one property is tested in a
+ * condition and others are read too. Destructuring would stop TypeScript from narrowing it.
+ */
+function isLikelyDiscriminated(references) {
+  const hasTestedProperty = references.some(({ parent }) => isInCondition(parent))
+
+  return hasTestedProperty && getReadProperties(references).length > 1
+}
+
 function getReadProperties(references) {
   return [...new Set(references.map(({ parent }) => parent.property.name))]
 }
@@ -197,7 +230,7 @@ function checkParameter(context, functionNode, parameter) {
   const isOnlyRead =
     references.length > 0 && references.every((reference) => isPlainPropertyRead(reference))
 
-  if (!isOnlyRead) {
+  if (!isOnlyRead || isLikelyDiscriminated(references)) {
     return
   }
 

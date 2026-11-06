@@ -569,7 +569,8 @@ function getJoinerProblem(declaration) {
 }
 
 function getVagueNameProblem({ name, kind }) {
-  const isValue = kind !== 'type' && kind !== 'typeParameter'
+  // Types keep established names (Result); imports are checked where they're declared
+  const isValue = !['type', 'typeParameter', 'import'].includes(kind)
 
   return isValue && vagueNames.has(name.toLowerCase())
     ? `"${name}" is vague. Name what it holds (trades, parsedState, saveOutcome, …).`
@@ -601,7 +602,6 @@ const plugin = {
   rules: {
     'min-length': createNamingRule('Require names of at least 3 characters', getLengthProblem),
     casing: createNamingRule('Enforce casing per kind of name', getCasingProblem),
-    // Values only: established type names such as Result stay allowed
     'no-vague-names': createNamingRule('Disallow vague names', getVagueNameProblem),
     'no-abbreviations': createNamingRule('Disallow abbreviations', getAbbreviationProblem),
     'boolean-prefix': createNamingRule(
