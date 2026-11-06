@@ -25,6 +25,10 @@ Trading log app: React + Vite + TypeScript 7, pnpm, oxlint, oxfmt, Vitest.
 - One job per function: `src/lib` is pure (no clock, randomness, console, I/O, DOM, async; every
   function returns), edges perform one effect, components don't compute. Max 30 lines (60 in
   .tsx), 3 params, complexity 6, depth 2. No `And`/`Or` in function names.
+- Destructure: parameters used only for their properties are destructured in the signature
+  (`({ shares, buyPrice }: Position)`), variables use `const { text } = …`.
+- Best practices are linted (`===`, no nested ternaries, `import type`, explicit return types on
+  exports, named exports, button `type`, no index keys, no prop spreading). See CONTRIBUTING.md.
 - Naming: full words, 3+ characters, no abbreviations or vague names (`data`, `value`), verbs
   first for functions, `is/has/…` for booleans, `on…` for callback props, `handle…` for handlers.
 - Layout: braces on every block; blank lines around blocks, multi-line statements and before

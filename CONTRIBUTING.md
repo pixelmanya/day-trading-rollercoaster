@@ -52,9 +52,9 @@ Code is laid out for reading. Two rules go beyond what the formatter does:
   `{}` need no blank line.
 
 ```ts
-export function computeYearTax(pretaxTotal: number, settings: TaxSettings): number {
-  const taxable = Math.max(0, pretaxTotal - settings.allowance)
-  const rate = settings.taxRate / 100
+export function computeYearTax(pretaxTotal: number, { allowance, taxRate }: TaxSettings): number {
+  const taxable = Math.max(0, pretaxTotal - allowance)
+  const rate = taxRate / 100
 
   if (taxable === 0) {
     return 0
@@ -71,13 +71,13 @@ Both are enforced by oxlint (`curly` and `layout/padding-lines` from
 
 - `strict` is on, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
   `noImplicitReturns` and `noPropertyAccessFromIndexSignature`. Don't loosen them per file.
-- No `any`; use `unknown` and narrow it. No non-null assertions (`!`) except on the root element
-  in `main.tsx`; handle the `undefined` case instead.
+- No `any`; use `unknown` and narrow it. No non-null assertions (`!`), not even for the root
+  element in `main.tsx`; handle the `undefined` case instead.
 - Optional properties (`note?: string`) mean "may be absent". If a property can be
   present-but-empty, type it `string | null` (or `string | undefined`) explicitly.
 - Untrusted data (storage, imported files, later the network) enters only through a validator
-  (`parseState` in `src/lib/state.ts`) that turns `unknown` into a `Result` of typed state. Never cast
-  parsed JSON with `as`.
+  (`parseState` in `src/lib/state.ts`) that turns `unknown` into a `Result` of typed state. Never
+  cast parsed JSON with `as`.
 - `interface` for object shapes, `type` for unions, aliases and mapped types.
 - Named exports only. The one exception is config files that tooling requires as default exports
   (`vite.config.ts`).
@@ -224,7 +224,7 @@ in objects with methods and hidden state.
     start: number,
   ): readonly number[] {
     return closedTrades.reduce<readonly number[]>(
-      (balances, closedTrade) => [...balances, (balances.at(-1) ?? start) + closedTrade.net],
+      (balances, { net }) => [...balances, (balances.at(-1) ?? start) + net],
       [start],
     )
   }
@@ -243,6 +243,37 @@ in objects with methods and hidden state.
 Enforced by oxlint: built-in rules (`no-param-reassign` with props, `prefer-const`, `no-var`,
 `no-plusplus`) and the in-repo plugin `tools/oxlint-plugin-fp.js` (`fp/no-class`, `fp/no-this`,
 `fp/no-let`, `fp/no-loop`, `fp/no-mutation`, and `fp/no-throw` in `src/lib`).
+
+## Destructuring
+
+Take what you need from an object where you receive it.
+
+- **Parameters** that are only used for their properties are destructured in the parameter
+  list, including callbacks and component props:
+
+  ```ts
+  export function computePositionCost({ shares, buyPrice, buyFee }: Position): number {
+    return shares * buyPrice + buyFee
+  }
+
+  const tickers = trades.map(({ ticker }) => ticker)
+  ```
+
+  Keep the whole parameter when you pass it on, return it, use it in a type predicate
+  (`trade is ClosedTrade`), call a method on it, or read it with `?.`.
+
+- **Variables** reading a property destructure it: `const { text } = context.sourceCode`, not
+  `const text = context.sourceCode.text`. Arrays use `.at()` instead of `[first] = …` unless
+  you take several elements.
+- **Rename while destructuring** when the property name would break the naming rules or clash:
+  `({ id: tradeId })`, `({ value: literalValue })`.
+- **React state** is destructured as a `[thing, setThing]` pair.
+- No pointless renames (`{ shares: shares }`) and always use shorthand (`{ shares }`).
+
+Enforced by oxlint: `prefer-destructuring`, `object-shorthand`, `no-useless-rename`,
+`react/hook-use-state`, and `destructuring/parameters` from
+`tools/oxlint-plugin-destructuring.js`. `pnpm lint:fix` destructures parameters automatically
+unless a name would collide; then rename by hand.
 
 ## One function, one job
 
@@ -348,6 +379,39 @@ Domain words are fixed: **trade** (one buy, optionally its sell), **open** / **c
 **cost** (buy amount + buy fee), **pretax**, **tax**, **net**, **balance** (start + sum of net),
 **cash** (balance − open cost), **allowance** (tax-free amount left this calendar year).
 
+## Best practices
+
+Beyond the sections above, oxlint enforces a set of widely used rules. The groups below are what
+they mean in practice; `.oxlintrc.json` has the exact list.
+
+- **Clarity:** `===` everywhere (`== null` is allowed to check null and undefined together); no
+  nested ternaries; no `else` after `return` and no lonely `if` inside `else`; no negated
+  conditions with an `else` (flip them); template literals instead of string concatenation;
+  object spread instead of `Object.assign`; explicit conversions (`Number(x)`, `Boolean(x)`)
+  instead of `+x` or `!!x`; no shadowed names; default parameters last; `**` instead of
+  `Math.pow`.
+- **Modern built-ins:** `.at(-1)`, `.includes()`, `.flatMap()`, `.slice()`, `Number.isNaN`,
+  `Object.fromEntries`; never pass a function reference straight to an array method
+  (`.map(parseNumber)`), because the index argument leaks in. Write
+  `.map((text) => parseNumber(text))`.
+- **TypeScript:** `import type` for types; exported functions declare their return type (React
+  components may infer); `interface` for object shapes; `Record<…>` for index signatures;
+  `readonly Trade[]` array syntax; no `any`, no `!`, no redundant type annotations on
+  initialised constants.
+- **Modules:** named exports only (config files and lint plugins excepted, because their tools
+  require a default export); no import cycles, duplicate imports or `import * as`; imports
+  first.
+- **React:** every `<button>` has an explicit `type`; list keys are never array indexes; no
+  spreading props (`{...props}`); no components defined inside components; no useless
+  fragments; self-closing tags for empty elements; no `dangerouslySetInnerHTML`.
+- **Accessibility:** labels are tied to their inputs; no `autoFocus` attribute (dialogs move
+  focus in code); clickable non-buttons need keyboard support and a role, so use a
+  `<button>`.
+- **Safety:** no `eval`, `new Function`, `alert` or comma sequences; `parseInt` always gets a
+  radix (better: `Number()`).
+- **File names:** camelCase, or PascalCase for components (`calc.ts`, `TradeSheet.tsx`). Lint
+  plugins in `tools/` follow oxlint's kebab-case plugin naming.
+
 ## Project structure
 
 ```
@@ -374,6 +438,7 @@ tools/
   oxlint-plugin-fp.js      Lint rules for the functional style
   oxlint-plugin-naming.js  Lint rules for naming
   oxlint-plugin-layout.js  Lint rule for blank lines around blocks
+  oxlint-plugin-destructuring.js  Lint rule for destructuring parameters
   ast-helpers.js           Shared helpers for the plugins
 ```
 
@@ -444,7 +509,8 @@ Rules that keep it that way:
   pre-tax preview in "Log sell").
 - Validation is a pure function from the field strings to `Result<Action, string>`; on
   submit, an `err` shows its message in the sheet's error line and an `ok` dispatches the action.
-- Initial values come from props (the trade being edited) and are formatted with `formatInputNumber`.
+- Initial values come from props (the trade being edited) and are formatted with
+  `formatInputNumber`.
 - No form library.
 
 ## Styling

@@ -198,7 +198,7 @@ function splitWords(name) {
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
     .split(/[\s_]+/)
-    .filter((word) => word.length > 0)
+    .filter(({ length }) => length > 0)
     .map((word) => word.toLowerCase())
 }
 
@@ -208,32 +208,32 @@ const booleanTypeNodes = new Set(['TSBooleanKeyword', 'TSTypePredicate'])
 
 const constantChecks = {
   Literal: () => true,
-  TemplateLiteral: (init) => init.expressions.length === 0,
-  UnaryExpression: (init) => init.argument.type === 'Literal',
-  TSSatisfiesExpression: (init) => isConstantInitializer(init.expression),
-  TSAsExpression: (init) => isConstAssertion(init.typeAnnotation),
+  TemplateLiteral: ({ expressions }) => expressions.length === 0,
+  UnaryExpression: ({ argument }) => argument.type === 'Literal',
+  TSSatisfiesExpression: ({ expression }) => isConstantInitializer(expression),
+  TSAsExpression: ({ typeAnnotation }) => isConstAssertion(typeAnnotation),
 }
 
 const booleanExpressionChecks = {
-  Literal: (node) => typeof node.value === 'boolean',
-  UnaryExpression: (node) => node.operator === '!',
-  BinaryExpression: (node) => comparisonOperators.has(node.operator),
+  Literal: ({ value: literalValue }) => typeof literalValue === 'boolean',
+  UnaryExpression: ({ operator }) => operator === '!',
+  BinaryExpression: ({ operator }) => comparisonOperators.has(operator),
 }
 
 const bindingCollectors = {
   Identifier: (pattern) => [pattern],
-  ObjectPattern: (pattern) =>
-    pattern.properties.flatMap((property) =>
-      collectBindings(property.type === 'RestElement' ? property.argument : property.value),
+  ObjectPattern: ({ properties }) =>
+    properties.flatMap(({ type, argument, value: boundPattern }) =>
+      collectBindings(type === 'RestElement' ? argument : boundPattern),
     ),
-  ArrayPattern: (pattern) => pattern.elements.flatMap((element) => collectBindings(element)),
-  RestElement: (pattern) => collectBindings(pattern.argument),
-  AssignmentPattern: (pattern) => collectBindings(pattern.left),
-  TSParameterProperty: (pattern) => collectBindings(pattern.parameter),
+  ArrayPattern: ({ elements }) => elements.flatMap((element) => collectBindings(element)),
+  RestElement: ({ argument }) => collectBindings(argument),
+  AssignmentPattern: ({ left }) => collectBindings(left),
+  TSParameterProperty: ({ parameter }) => collectBindings(parameter),
 }
 
-function isTopLevel(declarator) {
-  const declaration = declarator.parent
+function isTopLevel({ parent }) {
+  const declaration = parent
   const containerType = getPath(declaration, ['parent', 'type'])
   const outerType = getPath(declaration, ['parent', 'parent', 'type'])
 
@@ -292,10 +292,10 @@ function collectBindings(pattern) {
 }
 
 /** The property's name, or null for computed and non-identifier keys. */
-function getPropertyName(signature) {
-  const isNamed = !signature.computed && signature.key.type === 'Identifier'
+function getPropertyName({ computed, key }) {
+  const isNamed = !computed && key.type === 'Identifier'
 
-  return isNamed ? signature.key.name : null
+  return isNamed ? key.name : null
 }
 
 /** True when a property key belongs to an interface or type named …Props. */
@@ -318,13 +318,13 @@ function describeParameters(params) {
   )
 }
 
-function describeFunctionVariable(declarator, identifier) {
+function describeFunctionVariable({ init }, identifier) {
   return {
     name: identifier.name,
     node: identifier,
     kind: 'function',
-    isComponent: hasJsx(declarator.init.body),
-    isBoolean: isBooleanType(declarator.init.returnType),
+    isComponent: hasJsx(init.body),
+    isBoolean: isBooleanType(init.returnType),
   }
 }
 
@@ -356,16 +356,16 @@ function describeNamedNode(node, kind) {
 
 function createBindingVisitors(check) {
   const checkAll = (declarations) => declarations.forEach((declaration) => check(declaration))
-  const checkParameters = (node) => checkAll(describeParameters(node.params))
+  const checkParameters = ({ params }) => checkAll(describeParameters(params))
 
   return {
     VariableDeclarator: (node) =>
       checkAll(collectBindings(node.id).map((identifier) => describeVariable(node, identifier))),
     FunctionExpression: checkParameters,
     ArrowFunctionExpression: checkParameters,
-    CatchClause: (node) =>
+    CatchClause: ({ param }) =>
       checkAll(
-        collectBindings(node.param).map((identifier) => describeNamedNode(identifier, 'parameter')),
+        collectBindings(param).map((identifier) => describeNamedNode(identifier, 'parameter')),
       ),
     FunctionDeclaration: (node) => {
       if (node.id) {
@@ -382,7 +382,7 @@ function createBindingVisitors(check) {
 }
 
 function createImportVisitors(check) {
-  const checkLocal = (node) => check(describeNamedNode(node.local, 'import'))
+  const checkLocal = ({ local }) => check(describeNamedNode(local, 'import'))
 
   return {
     ImportSpecifier: checkLocal,
@@ -392,7 +392,7 @@ function createImportVisitors(check) {
 }
 
 function createTypeVisitors(check) {
-  const checkTypeName = (node) => node.id && check(describeNamedNode(node.id, 'type'))
+  const checkTypeName = ({ id: typeName }) => typeName && check(describeNamedNode(typeName, 'type'))
 
   return {
     TSInterfaceDeclaration: checkTypeName,

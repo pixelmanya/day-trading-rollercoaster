@@ -56,12 +56,12 @@ const createRule = (description, create) => ({
 })
 
 /** Root identifier of a member chain: `a.b.c` → `a`. */
-function getRootName(node) {
-  return node.type === 'MemberExpression'
-    ? getRootName(node.object)
-    : node.type === 'Identifier'
-      ? node.name
-      : null
+function getRootName({ type, object: memberObject, name }) {
+  if (type === 'MemberExpression') {
+    return getRootName(memberObject)
+  }
+
+  return type === 'Identifier' ? name : null
 }
 
 const impureGlobals = new Set([
@@ -87,8 +87,8 @@ const functionTypes = new Set([
 
 /** True when the identifier is a variable reference, not a property name or declaration. */
 const nonReferenceChecks = {
-  MemberExpression: (parent, identifier) => parent.property === identifier && !parent.computed,
-  Property: (parent, identifier) => parent.key === identifier && !parent.computed,
+  MemberExpression: ({ property, computed }, identifier) => property === identifier && !computed,
+  Property: ({ key, computed }, identifier) => key === identifier && !computed,
   TSPropertySignature: () => true,
   ImportSpecifier: () => true,
 }
@@ -97,7 +97,7 @@ const impureMembers = new Set(['Date.now', 'Math.random'])
 
 /** True when the identifier is a variable reference, not a property name or declaration. */
 function isReference(identifier) {
-  const parent = identifier.parent
+  const { parent } = identifier
   const type = getNodeType(parent)
 
   return !(Object.hasOwn(nonReferenceChecks, type) && nonReferenceChecks[type](parent, identifier))
@@ -194,13 +194,13 @@ const plugin = {
         }
       },
       CallExpression: (node) => {
-        const callee = node.callee
+        const { callee } = node
 
         if (callee.type !== 'MemberExpression' || callee.computed) {
           return
         }
 
-        const name = callee.property.name
+        const { name } = callee.property
 
         if (!mutatingMethods.has(name)) {
           return
