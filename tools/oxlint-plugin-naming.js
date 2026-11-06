@@ -486,8 +486,15 @@ function getCasingExpectation({ kind, isConstant, isComponent }) {
 /** Names a framework requires, exempt from casing: TanStack Router's `export const Route`. */
 const frameworkNames = new Set(['Route'])
 
+/** Interfaces whose property names a framework dictates: Vite's env variables (VITE_…). */
+const frameworkInterfaces = new Set(['ImportMetaEnv'])
+
+function isInFrameworkInterface(propertyKey) {
+  return frameworkInterfaces.has(getPath(propertyKey, ['parent', 'parent', 'parent', 'id', 'name']))
+}
+
 function getCasingProblem(declaration) {
-  if (frameworkNames.has(declaration.name)) {
+  if (frameworkNames.has(declaration.name) || isInFrameworkInterface(declaration.node)) {
     return null
   }
 
