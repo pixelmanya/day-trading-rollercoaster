@@ -9,6 +9,12 @@ export default defineConfig({
   plugins: [tanstackStart(), react(), nitro({ preset: 'node-server' })],
   test: {
     environment: 'node',
-    passWithNoTests: true,
+    setupFiles: ['src/test/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/lib/**/*.ts'],
+      exclude: ['src/lib/**/*.test.ts', 'src/lib/types.ts', 'src/lib/storage/types.ts'],
+      thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },
+    },
   },
 })

@@ -221,13 +221,18 @@ in objects with methods and hidden state.
   ```ts
   // Running balance after each closed trade
   export function computeBalanceSeries(
-    closedTrades: readonly ClosedResult[],
+    closedResults: readonly ClosedResult[],
     start: number,
   ): readonly number[] {
-    return closedTrades.reduce<readonly number[]>(
-      (balances, { net }) => [...balances, (balances.at(-1) ?? start) + net],
-      [start],
-    )
+    const startTrace: BalanceTrace = { balance: start, balances: [start] }
+
+    return closedResults.reduce(
+      ({ balance, balances }, { net }) => ({
+        balance: balance + net,
+        balances: [...balances, balance + net],
+      }),
+      startTrace,
+    ).balances
   }
   ```
 
@@ -676,17 +681,19 @@ Vitest for everything; Testing Library with jsdom for components.
 
 ## Git and pull requests
 
-- `main` is protected by a ruleset: changes land through pull requests that pass the required
-  checks `check` (format, lint, typecheck, test, build) and `pr-title`. No direct pushes, no force
-  pushes.
+- `main` is protected by a ruleset (`.github/rulesets/main.json`): changes land through pull
+  requests that pass the required checks `check` (format, lint, typecheck, test, build) and
+  `pr-title`. No direct pushes, no force pushes, no deleting `main`.
 - Work on a short-lived branch per change.
 - **Commits follow [Conventional Commits](https://www.conventionalcommits.org/):**
   `type(optional scope): summary` in the imperative, lowercase, no trailing period.
   Types: `feat`, `fix`, `refactor`, `test`, `docs`, `style`, `chore`, `ci`, `build`, `perf`.
   Breaking changes add `!` (`feat!: …`) and explain in the body.
-- **Squash-merge only.** The PR title becomes the commit on `main`, so it must itself be a valid
-  Conventional Commit; the `pr-title` check enforces this. Branch commits can be messier but
-  should still follow the format.
+- **Squash or rebase, no merge commits.** Squash when a branch is one change: the PR title
+  becomes the commit on `main`. Rebase when the branch is a series of meaningful commits: each
+  lands on `main` as it is. Either way the PR title and every commit subject must be valid
+  Conventional Commits; the `pr-title` check enforces both. Tidy the branch history before a
+  rebase merge.
 - Fill in the PR template: a summary of what and why, and a test plan. UI changes include
   screenshots in light and dark mode.
 - Keep PRs focused; unrelated cleanups go in their own PR.
