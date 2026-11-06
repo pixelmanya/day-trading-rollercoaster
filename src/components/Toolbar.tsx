@@ -8,8 +8,8 @@ interface ToolbarProps {
 }
 
 /**
- * Settings and "Log a buy". Desktop: side by side in the page's top-right corner.
- * Phones: Settings in a slim top bar, "Log a buy" floating at the bottom.
+ * Settings and "Log a buy", side by side: in a sticky top bar on phones, in the page's
+ * top-right corner on desktop.
  */
 export function Toolbar({ onOpenSettings, onLogBuy }: ToolbarProps) {
   return (

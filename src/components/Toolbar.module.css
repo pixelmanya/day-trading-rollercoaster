@@ -3,7 +3,6 @@
   gap: var(--space-8);
   align-items: center;
   justify-content: flex-end;
-  margin-block-end: var(--space-10);
 }
 
 .settingsButton {
@@ -29,28 +28,23 @@
 }
 
 .logBuyButton {
-  position: fixed;
   display: flex;
-  gap: var(--space-8);
+  gap: var(--space-6);
   align-items: center;
-  inset-block-end: calc(var(--space-20) + env(safe-area-inset-bottom));
-  inset-inline-start: 50%;
-  padding-block: var(--space-15);
-  padding-inline: var(--space-28);
-  font-size: var(--text-16);
+  padding-block: var(--space-8);
+  padding-inline: var(--space-16);
+  font-size: var(--text-15);
   font-weight: var(--weight-bold);
   color: var(--on-accent);
   background: var(--line);
   border: 0;
   border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-fab);
-  transform: translateX(-50%);
   transition:
     opacity var(--duration-fast) var(--ease-out),
     transform var(--duration-fast) var(--ease-out);
 
   &:active {
-    transform: translateX(-50%) scale(var(--press-scale));
+    transform: scale(var(--press-scale));
   }
 }
 
@@ -79,14 +73,8 @@
   }
 
   .logBuyButton {
-    position: static;
     padding-block: var(--space-12);
     padding-inline: var(--space-22);
-    box-shadow: none;
-    transform: none;
-
-    &:active {
-      transform: scale(var(--press-scale));
-    }
+    font-size: var(--text-16);
   }
 }

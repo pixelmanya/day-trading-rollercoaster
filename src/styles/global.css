@@ -11,7 +11,7 @@ html {
 }
 
 body {
-  padding-block: env(safe-area-inset-top) calc(var(--space-96) + env(safe-area-inset-bottom));
+  padding-block: env(safe-area-inset-top) env(safe-area-inset-bottom);
   font-family: var(--font-sans);
   font-feature-settings: 'tnum' 1;
   line-height: var(--leading-body);
@@ -29,13 +29,6 @@ button {
   outline: var(--focus-ring) solid var(--line);
   outline-offset: var(--focus-offset);
   border-radius: var(--radius-6);
-}
-
-/* Desktop has no floating "Log a buy" button to scroll past */
-@media (width >= 1024px) {
-  body {
-    padding-block-end: env(safe-area-inset-bottom);
-  }
 }
 
 /* Motion is decoration here: switch every animation and transition off when asked to */
