@@ -1,7 +1,14 @@
+/*
+ * Narrow: ticker over its details on the left, result on the right.
+ * Wide lists (container "trades"): one aligned line per trade.
+ */
 .row {
   display: grid;
+  grid-template-areas:
+    'ticker result'
+    'detail result';
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-12);
+  gap: var(--space-2) var(--space-12);
   align-items: center;
   inline-size: 100%;
   padding-block: var(--space-14);
@@ -18,25 +25,28 @@
   }
 }
 
-.main {
-  min-inline-size: 0;
-}
-
 .ticker {
-  display: block;
+  grid-area: ticker;
   font-size: var(--text-16);
   font-weight: var(--weight-bold);
 }
 
 .detail {
-  display: block;
+  grid-area: detail;
+  min-inline-size: 0;
   font-size: var(--text-13);
   color: var(--muted);
+}
+
+.fees::before,
+.tax::before {
+  content: ' · ';
 }
 
 .result {
   display: flex;
   flex-direction: column;
+  grid-area: result;
   gap: var(--space-4);
   align-items: flex-end;
 }
@@ -82,5 +92,40 @@
 @media (hover: hover) {
   .row:hover {
     background: var(--field);
+  }
+}
+
+/* Wide list: ticker, period, fees, tax and result side by side */
+@container trades (width >= 640px) {
+  .row {
+    grid-template-areas: 'ticker detail result';
+    grid-template-columns: minmax(var(--space-60), 1fr) minmax(0, 3fr) auto;
+    gap: var(--space-16);
+    padding-inline: var(--space-20);
+  }
+
+  .detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(2, var(--column-amount));
+    gap: var(--space-16);
+    font-size: var(--text-14);
+  }
+
+  .fees,
+  .tax {
+    text-align: end;
+  }
+
+  .fees::before,
+  .tax::before {
+    content: none;
+  }
+
+  .result {
+    flex-direction: row;
+    gap: var(--space-10);
+    align-items: center;
+    justify-content: flex-end;
+    min-inline-size: var(--column-result);
   }
 }

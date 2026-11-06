@@ -26,13 +26,9 @@ export function Hero({
     <section className={styles.hero} aria-label="Balance">
       <div className={styles.heroTop}>
         <span className={styles.label}>Balance after tax</span>
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-label="Settings"
-          onClick={onOpenSettings}
-        >
+        <button type="button" className={styles.settingsButton} onClick={onOpenSettings}>
           <Icon name="settings" />
+          Settings
         </button>
       </div>
       {/* Keyed by its text, so a new balance fades in */}

@@ -93,7 +93,12 @@
 
   /* Desktop (from 1024px): full-bleed hero on the left half, trades centered on the right */
   --page-gutter-wide: clamp(var(--space-28), 4vw, var(--space-60));
-  --trades-max-wide: 680px;
+  --trades-max-wide: 1040px;
+
+  /* Column widths when trade rows lay out as aligned columns */
+  --column-date: 96px;
+  --column-amount: 116px;
+  --column-result: 190px;
   --chart-min-wide: 120px;
   --text-display-wide: clamp(4rem, 5.6vw, 7rem);
   --text-24: 1.5rem;

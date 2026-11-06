@@ -1,5 +1,11 @@
-.column {
+.column,
+.header {
   display: block;
+}
+
+/* Trade rows switch to aligned columns when this is wide enough */
+.content {
+  container: trades / inline-size;
 }
 
 .logBuyButton {
@@ -34,23 +40,29 @@
   }
 }
 
-/* Desktop: trades centered in the right half, both ways; "Log a buy" as a header button */
+/* Desktop: "Log a buy" in the page's top-right corner; trades centered in the space below */
 @media (width >= 1024px) {
   .column {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    inline-size: 100%;
-    max-inline-size: calc(var(--trades-max-wide) + 2 * var(--page-gutter-wide));
+    display: grid;
+    grid-template-rows: auto 1fr;
     min-block-size: 100dvh;
-    margin-inline: auto;
     padding: var(--page-gutter-wide);
+  }
+
+  .header {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .content {
+    align-self: center;
+    inline-size: 100%;
+    max-inline-size: var(--trades-max-wide);
+    margin-inline: auto;
   }
 
   .logBuyButton {
     position: static;
-    display: flex;
-    margin-inline-start: auto;
     padding-block: var(--space-12);
     padding-inline: var(--space-22);
     box-shadow: none;

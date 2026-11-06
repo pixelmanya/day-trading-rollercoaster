@@ -62,12 +62,13 @@ function ClosedTradeRow({
       aria-label={`Edit ${trade.ticker}, ${formatSignedEuro(net)}`}
       onClick={handleEdit}
     >
-      <span className={styles.main}>
-        <span className={styles.ticker}>{trade.ticker}</span>
-        <span className={styles.detail}>
-          {formatShortDate(trade.buyDate)} → {formatShortDate(trade.sellDate)} · fees{' '}
-          {formatEuro(fees)} · tax {formatEuro(tax)}
+      <span className={styles.ticker}>{trade.ticker}</span>
+      <span className={styles.detail}>
+        <span>
+          {formatShortDate(trade.buyDate)} → {formatShortDate(trade.sellDate)}
         </span>
+        <span className={styles.fees}>fees {formatEuro(fees)}</span>
+        <span className={styles.tax}>tax {formatEuro(tax)}</span>
       </span>
       <span className={styles.result}>
         <span className={`${styles.net} ${styles[tone]}`}>{formatSignedEuro(net)}</span>

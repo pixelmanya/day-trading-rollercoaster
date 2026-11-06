@@ -1,7 +1,14 @@
+/*
+ * Narrow: ticker over its details on the left, cost and actions on the right.
+ * Wide lists (container "trades"): one aligned line per position.
+ */
 .row {
   display: grid;
+  grid-template-areas:
+    'ticker amount actions'
+    'detail amount actions';
   grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: var(--space-12);
+  gap: var(--space-2) var(--space-12);
   align-items: center;
   padding-block: var(--space-14);
   padding-inline: var(--space-16);
@@ -13,45 +20,57 @@
   }
 }
 
-.main {
-  min-inline-size: 0;
-}
-
 .ticker {
+  grid-area: ticker;
   font-size: var(--text-16);
   font-weight: var(--weight-bold);
 }
 
 .detail {
+  grid-area: detail;
+  min-inline-size: 0;
   font-size: var(--text-13);
   color: var(--muted);
 }
 
+.since::before {
+  content: ' · ';
+}
+
 .amount {
+  grid-area: amount;
   font-size: var(--text-16);
   font-weight: var(--weight-bold);
+  text-align: end;
 }
 
 .actions {
   display: flex;
+  grid-area: actions;
   gap: var(--space-4);
   align-items: center;
 }
 
 .editButton {
-  display: grid;
-  place-items: center;
-  inline-size: var(--space-28);
-  block-size: var(--space-28);
-  padding: 0;
-  font-size: var(--text-16);
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  padding-block: var(--space-6);
+  padding-inline: var(--space-10);
+  font-size: var(--text-14);
+  font-weight: var(--weight-semibold);
   color: var(--muted);
   background: none;
   border: 0;
   border-radius: var(--radius-pill);
   transition:
     color var(--duration-fast) var(--ease-out),
-    background-color var(--duration-fast) var(--ease-out);
+    background-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+
+  &:active {
+    transform: scale(var(--press-scale));
+  }
 }
 
 .sellButton {
@@ -87,5 +106,26 @@
 
   .sellButton:hover {
     opacity: var(--hover-opacity);
+  }
+}
+
+/* Wide list: ticker, size, buy date, cost and actions side by side */
+@container trades (width >= 640px) {
+  .row {
+    grid-template-areas: 'ticker detail amount actions';
+    grid-template-columns: minmax(var(--space-60), 1fr) minmax(0, 2fr) var(--column-amount) auto;
+    gap: var(--space-16);
+    padding-inline: var(--space-20);
+  }
+
+  .detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--column-date);
+    gap: var(--space-16);
+    font-size: var(--text-14);
+  }
+
+  .since::before {
+    content: none;
   }
 }
