@@ -1,0 +1,50 @@
+.tooltip {
+  position: absolute;
+  z-index: var(--layer-toolbar);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-block: var(--space-8);
+  padding-inline: var(--space-12);
+  font-size: var(--text-13);
+  white-space: nowrap;
+  pointer-events: none;
+  background: var(--surface);
+  border-radius: var(--radius-12);
+  box-shadow: var(--shadow-tooltip);
+  transform: translate(var(--space-14), -50%);
+  animation: tooltip-in var(--duration-fast) var(--ease-out);
+}
+
+.flipped {
+  transform: translate(calc(-100% - var(--space-14)), -50%);
+}
+
+.title {
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+}
+
+.gain,
+.loss {
+  font-size: var(--text-15);
+  font-weight: var(--weight-bold);
+}
+
+.gain {
+  color: var(--gain);
+}
+
+.loss {
+  color: var(--loss);
+}
+
+.balance {
+  font-weight: var(--weight-semibold);
+}
+
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+  }
+}

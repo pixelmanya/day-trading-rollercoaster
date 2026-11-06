@@ -85,7 +85,14 @@ function getHint(kind: SheetKind, trade: Trade | null): string {
 
 function SheetContent({ request, trade, appState, today, onSubmit, onCancel }: SheetContentProps) {
   if (request.kind === 'settings') {
-    return <SettingsForm settings={appState.settings} onSubmit={onSubmit} onCancel={onCancel} />
+    return (
+      <SettingsForm
+        settings={appState.settings}
+        today={today}
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+      />
+    )
   }
 
   if (request.kind === 'buy') {

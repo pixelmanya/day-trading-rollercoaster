@@ -1,25 +1,27 @@
 import { useState } from 'react'
 
+import { createDemoState, DEMO_SEED } from '../lib/demo'
 import { createSaveSettingsAction, createSettingsFields } from '../lib/forms'
 import type { SettingsFields } from '../lib/forms'
 import type { Action } from '../lib/reducer'
 import type { Settings } from '../lib/types'
-import { Button } from './Button'
 import { Field } from './Field'
 import { FormLayout } from './FormLayout'
 import { SaveActions } from './SaveActions'
+import { SettingsExtraActions } from './SettingsExtraActions'
 
 interface SettingsFormProps {
   readonly settings: Settings
+  /** Dates the demo log. */
+  readonly today: string
   readonly onSubmit: (action: Action) => void
   readonly onCancel: () => void
 }
 
 /** Start budget, tax rate and allowance, plus resetting the experiment. */
-export function SettingsForm({ settings, onSubmit, onCancel }: SettingsFormProps) {
+export function SettingsForm({ settings, today, onSubmit, onCancel }: SettingsFormProps) {
   const [fields, setFields] = useState(() => createSettingsFields(settings))
   const [error, setError] = useState('')
-  const [isResetArmed, setIsResetArmed] = useState(false)
 
   function handleFieldChange(fieldName: keyof SettingsFields, text: string) {
     setFields((current) => ({ ...current, [fieldName]: text }))
@@ -36,25 +38,18 @@ export function SettingsForm({ settings, onSubmit, onCancel }: SettingsFormProps
   }
 
   function handleReset() {
-    // A second tap confirms, so one slip can't wipe the log
-    if (isResetArmed) {
-      onSubmit({ type: 'resetExperiment' })
-    } else {
-      setIsResetArmed(true)
-    }
+    onSubmit({ type: 'resetExperiment' })
   }
 
-  const resetLabel = isResetArmed ? 'Tap again to delete everything' : 'Reset experiment'
+  function handleLoadDemo() {
+    onSubmit({ type: 'replaceState', state: createDemoState(today, DEMO_SEED) })
+  }
 
   return (
     <FormLayout
       error={error}
       actions={<SaveActions label="Save settings" onCancel={onCancel} onSave={handleSave} />}
-      extraActions={
-        <Button variant="danger" onClick={handleReset}>
-          {resetLabel}
-        </Button>
-      }
+      extraActions={<SettingsExtraActions onLoadDemo={handleLoadDemo} onReset={handleReset} />}
     >
       <Field
         label="Start budget (€)"

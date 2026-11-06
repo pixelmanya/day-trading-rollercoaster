@@ -30,14 +30,8 @@
   }
 }
 
-.heroTop {
-  display: flex;
-  gap: var(--space-12);
-  align-items: center;
-  justify-content: space-between;
-}
-
 .label {
+  display: block;
   font-size: var(--text-14);
   font-weight: var(--weight-semibold);
   color: var(--muted);
