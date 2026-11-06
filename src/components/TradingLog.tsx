@@ -8,6 +8,7 @@ import { LogSheet } from './LogSheet'
 import type { SheetRequest } from './LogSheet'
 import { SaveErrorBanner } from './SaveErrorBanner'
 import { StatsGrid } from './StatsGrid'
+import { Toolbar } from './Toolbar'
 import { TradesColumn } from './TradesColumn'
 
 import styles from './TradingLog.module.css'
@@ -30,13 +31,9 @@ export function TradingLog({
   const { settings } = appState
   const summary = summarize(appState.trades, settings, today)
 
-  function handleOpenSettings() {
-    setSheetRequest({ kind: 'settings' })
-  }
-
-  function handleLogBuy() {
-    setSheetRequest({ kind: 'buy' })
-  }
+  const handleOpenSettings = () => setSheetRequest({ kind: 'settings' })
+  const handleLogBuy = () => setSheetRequest({ kind: 'buy' })
+  const handleCloseSheet = () => setSheetRequest(CLOSED_SHEET)
 
   function handleEdit(tradeId: string) {
     setSheetRequest({ kind: 'edit', tradeId })
@@ -44,10 +41,6 @@ export function TradingLog({
 
   function handleSell(tradeId: string) {
     setSheetRequest({ kind: 'sell', tradeId })
-  }
-
-  function handleCloseSheet() {
-    setSheetRequest(CLOSED_SHEET)
   }
 
   function handleSubmit(action: Action) {
@@ -58,22 +51,26 @@ export function TradingLog({
   return (
     <>
       <main className={styles.page}>
+        <div className={styles.toolbar}>
+          <Toolbar onOpenSettings={handleOpenSettings} onLogBuy={handleLogBuy} />
+        </div>
         {saveError === null ? null : (
           <div className={styles.banner}>
             <SaveErrorBanner error={saveError} onRetry={onRetrySave} />
           </div>
         )}
         <div className={styles.summaryColumn}>
-          <Hero summary={summary} start={settings.start} onOpenSettings={handleOpenSettings} />
+          <Hero summary={summary} start={settings.start} />
           <StatsGrid summary={summary} />
         </div>
-        <TradesColumn
-          summary={summary}
-          settings={settings}
-          onLogBuy={handleLogBuy}
-          onEdit={handleEdit}
-          onSell={handleSell}
-        />
+        <div className={styles.trades}>
+          <TradesColumn
+            summary={summary}
+            settings={settings}
+            onEdit={handleEdit}
+            onSell={handleSell}
+          />
+        </div>
       </main>
       <LogSheet
         request={sheetRequest}
