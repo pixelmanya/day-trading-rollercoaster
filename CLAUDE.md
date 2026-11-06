@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-Trading log app: React + Vite + TypeScript 7, pnpm, oxlint, oxfmt, Vitest.
+Trading log app: TanStack Start (React 19, SSR, Node server via Nitro) + Vite + TypeScript 7,
+pnpm, oxlint, oxfmt, stylelint, Vitest.
 
 **Read `CONTRIBUTING.md` before changing code. It is the style guide and it is binding.**
 
@@ -33,6 +34,8 @@ Trading log app: React + Vite + TypeScript 7, pnpm, oxlint, oxfmt, Vitest.
   first for functions, `is/has/…` for booleans, `on…` for callback props, `handle…` for handlers.
 - Layout: braces on every block; blank lines around blocks, multi-line statements and before
   `return`. Run `pnpm lint:fix` to apply.
+- SSR: browser-only APIs (`localStorage`, `window`, `crypto.randomUUID`) only in effects and
+  event handlers, never during render. Routes live in `src/routes/` (`export const Route`).
 - Keep UI copy and visuals identical to the original unless the task says otherwise.
 - Dates are local `YYYY-MM-DD` via `getToday()`; never `toISOString()` for dates.
 

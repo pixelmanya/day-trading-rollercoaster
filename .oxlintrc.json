@@ -278,7 +278,14 @@
       "rules": {
         "max-lines": "off"
       }
+    },
+    {
+      "files": ["src/routes/**"],
+      "rules": {
+        "unicorn/filename-case": "off",
+        "react/only-export-components": "off"
+      }
     }
   ],
-  "ignorePatterns": ["dist", "coverage"]
+  "ignorePatterns": ["dist", "coverage", ".output", ".nitro", ".tanstack", "src/routeTree.gen.ts"]
 }

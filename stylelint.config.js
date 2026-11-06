@@ -15,7 +15,7 @@ const classNamePattern = new RegExp(
 /** @type {import('stylelint').Config} */
 export default {
   extends: ['stylelint-config-standard'],
-  ignoreFiles: ['dist/**', 'coverage/**'],
+  ignoreFiles: ['dist/**', 'coverage/**', '.output/**'],
   rules: {
     // camelCase classes, so CSS Modules read as styles.closeBtn
     'selector-class-pattern': [
