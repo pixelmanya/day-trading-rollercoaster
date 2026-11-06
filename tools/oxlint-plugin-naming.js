@@ -481,7 +481,14 @@ function getCasingExpectation({ kind, isConstant, isComponent }) {
   return isConstant ? constantCasing : casingByKind[kind]
 }
 
+/** Names a framework requires, exempt from casing: TanStack Router's `export const Route`. */
+const frameworkNames = new Set(['Route'])
+
 function getCasingProblem(declaration) {
+  if (frameworkNames.has(declaration.name)) {
+    return null
+  }
+
   const { pattern, label } = getCasingExpectation(declaration)
 
   return pattern.test(declaration.name) ? null : `${label}: "${declaration.name}".`

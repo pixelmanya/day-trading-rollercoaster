@@ -6,6 +6,8 @@ calendar year). It shows the after-tax balance against the start budget.
 
 Data stays in your browser (localStorage). Nothing is sent anywhere.
 
+Built with TanStack Start (React, server-side rendering) and deployed as a Node server.
+
 ## Development
 
 Requires Node 22 and pnpm.
@@ -13,6 +15,16 @@ Requires Node 22 and pnpm.
 ```bash
 pnpm install
 pnpm dev
+```
+
+To run the production build:
+
+```bash
+pnpm build
+```
+
+```bash
+pnpm start
 ```
 
 Before pushing, run:
