@@ -33,5 +33,13 @@ Before pushing, run:
 pnpm check
 ```
 
+## Deployment and previews
+
+The app runs on [Render](https://render.com) as defined in `render.yaml`: `main` deploys once its
+CI checks pass, and every pull request gets its own preview URL, posted on the PR by Render.
+
+To connect it (once): in the Render dashboard choose **New → Blueprint**, pick this repository,
+and apply the blueprint. Render validates `render.yaml` and creates the service.
+
 How the code is written, and how changes get onto `main`, is described in
 [CONTRIBUTING.md](CONTRIBUTING.md).

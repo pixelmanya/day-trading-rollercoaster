@@ -700,4 +700,6 @@ Vitest for everything; Testing Library with jsdom for components.
   rebase merge.
 - Fill in the PR template: a summary of what and why, and a test plan. UI changes include
   screenshots in light and dark mode.
+- Every PR gets a Render preview (see `render.yaml`); its link appears on the PR. Check UI
+  changes there, on a phone if you can, before merging.
 - Keep PRs focused; unrelated cleanups go in their own PR.
