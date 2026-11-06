@@ -3,21 +3,18 @@ import { computeChartGeometry } from '../lib/chart'
 import { formatEuro, formatPercent, formatSignedEuro } from '../lib/format'
 import type { Summary } from '../lib/types'
 import { BalanceChart } from './BalanceChart'
-import { Icon } from './Icon'
 
 import styles from './Hero.module.css'
 
 interface HeroProps {
   readonly summary: Summary
   readonly start: number
-  readonly onOpenSettings: () => void
 }
 
 /** The balance after tax, its change since the start, and the balance chart. */
 export function Hero({
   summary: { balance, change, changeRatio, closedResults },
   start,
-  onOpenSettings,
 }: HeroProps) {
   const geometry = computeChartGeometry(computeBalanceSeries(closedResults, start), start)
   const balanceText = formatEuro(balance)
@@ -26,10 +23,6 @@ export function Hero({
     <section className={styles.hero} aria-label="Balance">
       <div className={styles.heroTop}>
         <span className={styles.label}>Balance after tax</span>
-        <button type="button" className={styles.settingsButton} onClick={onOpenSettings}>
-          <Icon name="settings" />
-          Settings
-        </button>
       </div>
       {/* Keyed by its text, so a new balance fades in */}
       <div key={balanceText} className={styles.balance}>
