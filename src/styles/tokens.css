@@ -1,0 +1,112 @@
+/*
+ * Design tokens. The only file allowed to contain raw colors and raw sizes.
+ *
+ * Scales contain exactly the values the design uses, named by their pixel value
+ * (--space-14 = 14px) so porting stays pixel-identical. Reuse an existing step
+ * before adding one; add a step only for a new design need, in both themes if it is a color.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Color */
+  --bg: #f2f5f9;
+  --surface: #fff;
+  --ink: #18212f;
+  --muted: #5d6b80;
+  --grid: #dce3ec;
+  --line: #2f43c9;
+  --area: rgb(47 67 201 / 10%);
+  --gain: #16804f;
+  --loss: #bf3a32;
+  --field: #eef2f7;
+  --scrim: rgb(16 22 32 / 45%);
+
+  /* Text on filled --line buttons */
+  --on-accent: #fff;
+
+  /* Typography: family, sizes in rem (1rem = 16px default) */
+  --font-sans: 'Schibsted Grotesk', system-ui, sans-serif;
+  --text-12-5: 0.78125rem;
+  --text-13: 0.8125rem;
+  --text-13-5: 0.84375rem;
+  --text-14: 0.875rem;
+  --text-14-5: 0.90625rem;
+  --text-15: 0.9375rem;
+  --text-16: 1rem;
+  --text-17: 1.0625rem;
+  --text-18: 1.125rem;
+  --text-19: 1.1875rem;
+  --text-21: 1.3125rem;
+  --text-display: clamp(2.75rem, 13vw, 4rem);
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+  --leading-tight: 1;
+  --leading-body: 1.45;
+  --tracking-tight: -0.01em;
+  --tracking-display: -0.035em;
+
+  /* Spacing (padding, margin, gap, offsets) */
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-5: 5px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-11: 11px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-15: 15px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-22: 22px;
+  --space-28: 28px;
+  --space-60: 60px;
+  --space-96: 96px;
+
+  /* Radius */
+  --radius-6: 6px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-22: 22px;
+  --radius-24: 24px;
+  --radius-pill: 999px;
+
+  /* Lines */
+  --hairline: 1px;
+  --border-input: 1.5px;
+  --focus-ring: 2px;
+
+  /* Layout */
+  --content-max: 560px;
+  --grid-cell: 22px;
+
+  /* Elevation and motion */
+  --shadow-fab: 0 8px 24px -8px var(--line);
+  --duration-sheet: 0.22s;
+  --sheet-offset: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --bg: #0f141c;
+    --surface: #171e29;
+    --ink: #e7ecf3;
+    --muted: #8e9bb0;
+    --grid: #263142;
+    --line: #8e9cff;
+    --area: rgb(142 156 255 / 14%);
+    --gain: #3cc488;
+    --loss: #f2695e;
+    --field: #1f2836;
+    --scrim: rgb(0 0 0 / 60%);
+    --on-accent: #0f141c;
+  }
+}
