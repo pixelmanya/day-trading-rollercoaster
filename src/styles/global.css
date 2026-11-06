@@ -1,0 +1,32 @@
+/* Element resets and base styles. Component styles live in their CSS modules. */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  /* stylelint-disable-next-line property-no-vendor-prefix -- iOS Safari only knows the prefixed form */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  padding-block: env(safe-area-inset-top) calc(var(--space-96) + env(safe-area-inset-bottom));
+  font-family: var(--font-sans);
+  font-feature-settings: 'tnum' 1;
+  line-height: var(--leading-body);
+  color: var(--ink);
+  background: var(--bg);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: var(--focus-ring) solid var(--line);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-6);
+}

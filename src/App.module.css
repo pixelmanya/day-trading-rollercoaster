@@ -1,0 +1,12 @@
+.page {
+  max-inline-size: var(--content-max);
+  margin-inline: auto;
+  padding-block: var(--space-20);
+  padding-inline: var(--space-18);
+}
+
+.status {
+  padding-block: var(--space-60);
+  text-align: center;
+  color: var(--muted);
+}

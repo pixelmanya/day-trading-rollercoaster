@@ -14,6 +14,8 @@ export type Session =
 export interface ReadySession {
   readonly phase: 'ready'
   readonly appState: AppState
+  /** The local date when the log loaded, YYYY-MM-DD. Read once, outside render. */
+  readonly today: string
   /** Counts user changes; each one is saved. 0 means nothing to save yet. */
   readonly revision: number
   /** The last save failure, until a save succeeds. */
@@ -22,7 +24,7 @@ export interface ReadySession {
 
 /** What each session event carries, keyed by event type. */
 interface EventPayloads {
-  readonly loadSucceeded: { readonly appState: AppState }
+  readonly loadSucceeded: { readonly appState: AppState; readonly today: string }
   readonly loadFailed: { readonly error: AppError }
   readonly actionDispatched: { readonly action: Action }
   readonly saveSucceeded: Readonly<Record<never, never>>
@@ -49,9 +51,10 @@ type EventHandlers = {
 }
 
 const eventHandlers: EventHandlers = {
-  loadSucceeded: ({ event: { appState } }) => ({
+  loadSucceeded: ({ event: { appState, today } }) => ({
     phase: 'ready',
     appState,
+    today,
     revision: 0,
     saveError: null,
   }),
@@ -77,13 +80,16 @@ export function reduceSession<Type extends SessionEventType>(
   return eventHandlers[event.type]({ session, event })
 }
 
-/** The event for a finished load. Nothing stored yet starts an empty log. */
-export function createLoadEvent(loadOutcome: Result<AppState | null, AppError>): SessionEvent {
+/** The event for a finished load on `today`. Nothing stored yet starts an empty log. */
+export function createLoadEvent(
+  loadOutcome: Result<AppState | null, AppError>,
+  today: string,
+): SessionEvent {
   if (!loadOutcome.isSuccess) {
     return { type: 'loadFailed', error: loadOutcome.error }
   }
 
-  return { type: 'loadSucceeded', appState: loadOutcome.output ?? createEmptyState() }
+  return { type: 'loadSucceeded', appState: loadOutcome.output ?? createEmptyState(), today }
 }
 
 /** The event for a finished save. */
