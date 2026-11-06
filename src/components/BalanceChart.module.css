@@ -22,7 +22,7 @@
 .line {
   fill: none;
   stroke: var(--line);
-  stroke-width: 2.5;
+  stroke-width: 1.5;
   stroke-linejoin: round;
 }
 
@@ -39,7 +39,7 @@
 
 .endPoint {
   stroke: var(--line);
-  stroke-width: 10;
+  stroke-width: 7;
   stroke-linecap: round;
   animation: fade-in var(--duration-base) var(--ease-out) var(--duration-draw) backwards;
 }
@@ -47,7 +47,7 @@
 /* A soft ring that breathes around the latest balance */
 .pulse {
   stroke: var(--line);
-  stroke-width: 10;
+  stroke-width: 7;
   stroke-linecap: round;
   opacity: 0;
   animation: pulse var(--duration-pulse) var(--ease-out) var(--duration-draw) infinite;
@@ -60,14 +60,14 @@
 
 .highlight {
   fill: none;
-  stroke-width: 3.5;
+  stroke-width: 2.25;
   stroke-linecap: round;
   stroke-linejoin: round;
   animation: fade-in var(--duration-fast) var(--ease-out);
 }
 
 .hoverPoint {
-  stroke-width: 12;
+  stroke-width: 8;
   stroke-linecap: round;
 }
 
@@ -101,13 +101,13 @@
 
 @keyframes pulse {
   0% {
-    stroke-width: 10;
+    stroke-width: 7;
     opacity: 0.35;
   }
 
   70%,
   100% {
-    stroke-width: 28;
+    stroke-width: 20;
     opacity: 0;
   }
 }
