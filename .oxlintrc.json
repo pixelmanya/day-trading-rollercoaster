@@ -41,13 +41,105 @@
     "naming/handler-names": "error",
     "naming/verb-first": "error",
     "curly": ["error", "all"],
-    "layout/padding-lines": "error"
+    "layout/padding-lines": "error",
+    "naming/single-purpose": "error",
+    "max-lines-per-function": [
+      "error",
+      {
+        "max": 30,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ],
+    "max-params": [
+      "error",
+      {
+        "max": 3
+      }
+    ],
+    "complexity": [
+      "error",
+      {
+        "max": 6
+      }
+    ],
+    "max-depth": [
+      "error",
+      {
+        "max": 2
+      }
+    ],
+    "max-nested-callbacks": [
+      "error",
+      {
+        "max": 3
+      }
+    ],
+    "max-lines": [
+      "error",
+      {
+        "max": 250,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ],
+    "react/react-in-jsx-scope": "off"
   },
   "overrides": [
     {
+      "files": ["src/**/*.tsx"],
+      "rules": {
+        "max-lines-per-function": [
+          "error",
+          {
+            "max": 60,
+            "skipBlankLines": true,
+            "skipComments": true
+          }
+        ]
+      }
+    },
+    {
       "files": ["src/lib/**/*.ts"],
       "rules": {
-        "fp/no-throw": "error"
+        "fp/no-throw": "error",
+        "fp/no-impure-globals": "error",
+        "fp/require-return": "error",
+        "fp/no-async": "error"
+      }
+    },
+    {
+      "files": ["src/lib/storage/**/*.ts"],
+      "rules": {
+        "fp/no-impure-globals": "off",
+        "fp/no-async": "off"
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "src/test/**"],
+      "rules": {
+        "fp/require-return": "off",
+        "max-lines-per-function": "off",
+        "max-nested-callbacks": [
+          "error",
+          {
+            "max": 4
+          }
+        ],
+        "max-lines": [
+          "error",
+          {
+            "max": 500,
+            "skipBlankLines": true,
+            "skipComments": true
+          }
+        ]
+      }
+    },
+    {
+      "files": ["tools/**"],
+      "rules": {
+        "max-lines": "off"
       }
     }
   ],

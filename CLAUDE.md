@@ -22,6 +22,9 @@ Trading log app: React + Vite + TypeScript 7, pnpm, oxlint, oxfmt, Vitest.
 - Styles use CSS Modules with camelCase classes, logical properties and tokens from
   `src/styles/tokens.css` only (colors, type, spacing, radii); stylelint enforces it.
 - `src/lib` functions take every input explicitly (no default params); domain types are readonly.
+- One job per function: `src/lib` is pure (no clock, randomness, console, I/O, DOM, async; every
+  function returns), edges perform one effect, components don't compute. Max 30 lines (60 in
+  .tsx), 3 params, complexity 6, depth 2. No `And`/`Or` in function names.
 - Naming: full words, 3+ characters, no abbreviations or vague names (`data`, `value`), verbs
   first for functions, `is/has/…` for booleans, `on…` for callback props, `handle…` for handlers.
 - Layout: braces on every block; blank lines around blocks, multi-line statements and before

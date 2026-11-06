@@ -50,49 +50,65 @@ function isMultiLine(text, statement) {
   return text.slice(start, end).includes('\n')
 }
 
-function getPaddingReason(text, previous, next, isTopLevel) {
-  const areBothImports = previous.type === 'ImportDeclaration' && next.type === 'ImportDeclaration'
+function isEitherBlock(previous, next) {
+  return isBlock(previous) || isBlock(next)
+}
 
-  if (areBothImports) {
+function isEitherMultiLine(text, previous, next) {
+  return isMultiLine(text, previous) || isMultiLine(text, next)
+}
+
+function isImportPair(previous, next) {
+  return previous.type === 'ImportDeclaration' && next.type === 'ImportDeclaration'
+}
+
+function getMultiLineReason(statementList) {
+  return statementList.isTopLevel ? 'between top-level items' : 'around multi-line statements'
+}
+
+/** Why `previous` and `next` need a blank line between them, or null if they don't. */
+function getPaddingReason(statementList, previous, next) {
+  if (isImportPair(previous, next)) {
     return null
   }
 
-  if (isBlock(previous) || isBlock(next)) {
+  if (isEitherBlock(previous, next)) {
     return 'around block statements'
   }
 
-  if (isMultiLine(text, previous) || isMultiLine(text, next)) {
-    return isTopLevel ? 'between top-level items' : 'around multi-line statements'
+  if (isEitherMultiLine(statementList.text, previous, next)) {
+    return getMultiLineReason(statementList)
   }
 
   return next.type === 'ReturnStatement' ? 'before return' : null
 }
 
-function createPaddingChecker(context) {
+function hasBlankLineBetween(text, previous, next) {
+  const [, previousEnd] = getRange(previous)
+  const [nextStart] = getRange(next)
+
+  return blankLine.test(text.slice(previousEnd, nextStart))
+}
+
+function reportMissingPadding(context, previous, next) {
+  const [, previousEnd] = getRange(previous)
   const text = context.sourceCode.text
+  const statementList = { text, isTopLevel: next.parent.type === 'Program' }
+  const reason = getPaddingReason(statementList, previous, next)
 
-  return (statements, isTopLevel) =>
-    statements.slice(1).forEach((next, index) => {
-      const previous = statements[index]
-      const reason = getPaddingReason(text, previous, next, isTopLevel)
-
-      if (!reason) {
-        return
-      }
-
-      const [, previousEnd] = getRange(previous)
-      const [nextStart] = getRange(next)
-
-      if (blankLine.test(text.slice(previousEnd, nextStart))) {
-        return
-      }
-
-      context.report({
-        node: next,
-        message: `Add a blank line ${reason}.`,
-        fix: (fixer) => fixer.insertTextAfterRange([previousEnd, previousEnd], '\n'),
-      })
+  if (reason && !hasBlankLineBetween(text, previous, next)) {
+    context.report({
+      node: next,
+      message: `Add a blank line ${reason}.`,
+      fix: (fixer) => fixer.insertTextAfterRange([previousEnd, previousEnd], '\n'),
     })
+  }
+}
+
+function checkPadding(context, statements) {
+  statements
+    .slice(1)
+    .forEach((next, index) => reportMissingPadding(context, statements[index], next))
 }
 
 const plugin = {
@@ -106,16 +122,12 @@ const plugin = {
           description: 'Require blank lines around blocks, multi-line statements and returns',
         },
       },
-      create: (context) => {
-        const checkPadding = createPaddingChecker(context)
-
-        return {
-          Program: (node) => checkPadding(node.body, true),
-          BlockStatement: (node) => checkPadding(node.body, false),
-          StaticBlock: (node) => checkPadding(node.body, false),
-          SwitchCase: (node) => checkPadding(node.consequent, false),
-        }
-      },
+      create: (context) => ({
+        Program: (node) => checkPadding(context, node.body),
+        BlockStatement: (node) => checkPadding(context, node.body),
+        StaticBlock: (node) => checkPadding(context, node.body),
+        SwitchCase: (node) => checkPadding(context, node.consequent),
+      }),
     },
   },
 }

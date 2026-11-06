@@ -9,7 +9,12 @@
  * - no-loop: no for/while/do loops; use map/filter/reduce or recursion
  * - no-mutation: no assignment to properties, no `++`/`--`, no mutating methods
  * - no-throw: no `throw`; return a Result instead (enabled for src/lib)
+ * - no-impure-globals: no clock, randomness, console, I/O or DOM globals (src/lib)
+ * - require-return: every function returns a value; void functions only exist for effects (src/lib)
+ * - no-async: no async functions; only storage adapters do I/O (src/lib)
  */
+
+import { getChildNodes, getNodeType, getPath, isAstObject } from './ast-helpers.js'
 
 const mutatingMethods = new Set([
   'push',
@@ -57,6 +62,89 @@ function getRootName(node) {
     : node.type === 'Identifier'
       ? node.name
       : null
+}
+
+const impureGlobals = new Set([
+  'console',
+  'crypto',
+  'document',
+  'fetch',
+  'globalThis',
+  'localStorage',
+  'navigator',
+  'performance',
+  'sessionStorage',
+  'setInterval',
+  'setTimeout',
+  'window',
+])
+
+const functionTypes = new Set([
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'ArrowFunctionExpression',
+])
+
+/** True when the identifier is a variable reference, not a property name or declaration. */
+const nonReferenceChecks = {
+  MemberExpression: (parent, identifier) => parent.property === identifier && !parent.computed,
+  Property: (parent, identifier) => parent.key === identifier && !parent.computed,
+  TSPropertySignature: () => true,
+  ImportSpecifier: () => true,
+}
+
+const impureMembers = new Set(['Date.now', 'Math.random'])
+
+/** True when the identifier is a variable reference, not a property name or declaration. */
+function isReference(identifier) {
+  const parent = identifier.parent
+  const type = getNodeType(parent)
+
+  return !(Object.hasOwn(nonReferenceChecks, type) && nonReferenceChecks[type](parent, identifier))
+}
+
+/** True when `node` contains `return <value>` belonging to this function, not a nested one. */
+function hasValueReturn(node) {
+  if (!isAstObject(node)) {
+    return false
+  }
+
+  if (node.type === 'ReturnStatement') {
+    return node.argument !== null
+  }
+
+  return getChildNodes(node).some(
+    (child) => !functionTypes.has(getNodeType(child)) && hasValueReturn(child),
+  )
+}
+
+/** "Date.now" for `Date.now`, "" for computed or non-identifier members. */
+function getMemberPath(node) {
+  const objectName = getPath(node, ['object', 'name'])
+
+  return node.computed ? '' : `${objectName}.${node.property.name}`
+}
+
+function checkImpureIdentifier(context, node) {
+  if (impureGlobals.has(node.name) && isReference(node)) {
+    report(context, node, `\`${node.name}\` is a side effect. Pass it in or move it to an edge.`)
+  }
+}
+
+function checkImpureMember(context, node) {
+  const memberPath = getMemberPath(node)
+
+  if (impureMembers.has(memberPath)) {
+    report(context, node, `\`${memberPath}()\` is impure. Pass the input in.`)
+  }
+}
+
+function checkClockConstructor(context, node) {
+  const isClockRead = getPath(node, ['callee', 'name']) === 'Date' && node.arguments.length === 0
+
+  if (isClockRead) {
+    report(context, node, '`new Date()` reads the clock. Pass today in as a parameter.')
+  }
 }
 
 const plugin = {
@@ -126,6 +214,49 @@ const plugin = {
         report(context, node, `\`.${name}()\` mutates. Use ${immutableAlternatives[name]}.`)
       },
     })),
+
+    'no-impure-globals': createRule(
+      'Disallow clock, randomness, I/O and DOM globals',
+      (context) => ({
+        Identifier: (node) => checkImpureIdentifier(context, node),
+        MemberExpression: (node) => checkImpureMember(context, node),
+        NewExpression: (node) => checkClockConstructor(context, node),
+      }),
+    ),
+
+    'require-return': createRule('Require functions to return a value', (context) => {
+      const check = (node) => {
+        const isExpressionBody = node.type === 'ArrowFunctionExpression' && node.expression
+
+        if (!isExpressionBody && !hasValueReturn(node.body)) {
+          report(
+            context,
+            node,
+            'Functions return a value. A function without one only has side effects.',
+          )
+        }
+      }
+
+      return {
+        FunctionDeclaration: check,
+        FunctionExpression: check,
+        ArrowFunctionExpression: check,
+      }
+    }),
+
+    'no-async': createRule('Disallow async functions', (context) => {
+      const check = (node) => {
+        if (node.async) {
+          report(context, node, 'No async here. Only storage adapters (the I/O edge) are async.')
+        }
+      }
+
+      return {
+        FunctionDeclaration: check,
+        FunctionExpression: check,
+        ArrowFunctionExpression: check,
+      }
+    }),
 
     'no-throw': createRule('Disallow throw', (context) => ({
       ThrowStatement: (node) =>

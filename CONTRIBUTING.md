@@ -244,6 +244,51 @@ Enforced by oxlint: built-in rules (`no-param-reassign` with props, `prefer-cons
 `no-plusplus`) and the in-repo plugin `tools/oxlint-plugin-fp.js` (`fp/no-class`, `fp/no-this`,
 `fp/no-let`, `fp/no-loop`, `fp/no-mutation`, and `fp/no-throw` in `src/lib`).
 
+## One function, one job
+
+Every function does exactly one thing, and functions in `src/lib` do it without side effects.
+
+- **Pure core, effects at the edges.** `src/lib` is pure: no clock (`Date.now()`, `new Date()`),
+  no randomness (`Math.random()`, `crypto`), no `console`, no I/O (`fetch`, `localStorage`), no
+  DOM (`document`, `window`), no timers, no `async`. Inputs like today's date or a new id are
+  parameters. Only `src/lib/storage/` (the I/O edge) is exempt.
+- **Every lib function returns a value.** A function that returns nothing can only exist for
+  its side effects, so `src/lib` has none.
+- **Edges orchestrate one effect.** Outside `src/lib` (hooks, event handlers), a function
+  computes with pure lib functions and then performs exactly one effect: dispatch an action,
+  save, or touch the DOM. It does not also calculate. Checked in review.
+- **Components don't compute.** A component maps props to JSX. Anything beyond picking fields
+  and formatting with `format.ts` (sums, filters, tax) moves to a tested function in `src/lib`.
+- **Names can't join jobs.** A function name containing `And` or `Or` (`validateAndSave`,
+  `parseOrDefault`) is a lint error: split it into two functions.
+- **Size limits** keep functions focused (enforced by oxlint):
+
+  | Limit                          | Max                                  |
+  | ------------------------------ | ------------------------------------ |
+  | Lines per function (code only) | 30 (60 in `.tsx` files)              |
+  | Parameters                     | 3; use an options object beyond that |
+  | Cyclomatic complexity          | 6                                    |
+  | Block nesting depth            | 2                                    |
+  | Nested callbacks               | 3 (4 in tests)                       |
+  | Lines per file (code only)     | 250 (500 in tests)                   |
+
+  Complexity counts every branch, including `&&`, `||`, `??` and `?.`. When a function hits a
+  limit, extract named helpers or replace branching with a lookup table:
+
+  ```ts
+  const formatterByKind = {
+    euro: formatEuro,
+    percent: formatPercent,
+  } as const satisfies Record<FigureKind, (amount: number) => string>
+
+  export function formatFigure(kind: FigureKind, amount: number): string {
+    return formatterByKind[kind](amount)
+  }
+  ```
+
+Enforced by oxlint: `fp/no-impure-globals`, `fp/require-return` and `fp/no-async` in
+`src/lib`, `naming/single-purpose`, and the built-in size rules.
+
 ## Naming
 
 Names are for the next reader. A name says what a thing is or does, in full words, without
@@ -329,6 +374,7 @@ tools/
   oxlint-plugin-fp.js      Lint rules for the functional style
   oxlint-plugin-naming.js  Lint rules for naming
   oxlint-plugin-layout.js  Lint rule for blank lines around blocks
+  ast-helpers.js           Shared helpers for the plugins
 ```
 
 Rules that keep it that way:
