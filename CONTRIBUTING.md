@@ -575,7 +575,8 @@ Rules that keep it that way:
 ### Responsiveness and motion
 
 - Mobile-first. Phones get a single column capped at `--content-max`. From 1024 px wide the app
-  is a two-column dashboard (summary left and sticky, trades right) and sheets become centered
+  is a two-column dashboard of equal halves (summary left and sticky, trades right), filling the
+  window up to `--content-max-wide` and centered beyond it, and sheets become centered
   dialogs. Use exactly that one breakpoint, written `@media (width >= 1024px)`; don't add others
   without a design reason.
 - Hover styles go inside `@media (hover: hover)`, so touch screens never get stuck hover states.
