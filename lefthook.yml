@@ -1,0 +1,11 @@
+# Fast local checks on staged files. CI runs the full `pnpm check`.
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: '*.{ts,tsx,js,mjs,json,md,css,yml,yaml}'
+      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    lint:
+      glob: '*.{ts,tsx,js,mjs}'
+      run: pnpm exec oxlint --deny-warnings {staged_files}
