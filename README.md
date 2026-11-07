@@ -17,6 +17,11 @@ pnpm install
 pnpm dev
 ```
 
+Accounts and synced trades need Postgres. Copy `.env.example` to `.env` and set `DATABASE_URL`,
+for example to a local Postgres 16 or a free [Neon](https://neon.tech) database. Without it the
+app runs in guest mode, keeping the log in the browser. `/api/health` shows whether the database
+answers.
+
 To run the production build:
 
 ```bash
