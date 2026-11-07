@@ -205,7 +205,7 @@
     "import/no-unassigned-import": [
       "error",
       {
-        "allow": ["**/*.css"]
+        "allow": ["**/*.css", "@tanstack/react-start/server-only"]
       }
     ]
   },
