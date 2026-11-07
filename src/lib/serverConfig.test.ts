@@ -12,6 +12,24 @@ describe('parseServerConfig', () => {
     })
   })
 
+  test('uses the preview database in a pull request preview, never production’s', () => {
+    const preview = 'postgresql://user:secret@preview.neon.tech/log'
+    const production = 'postgresql://user:secret@production.neon.tech/log'
+
+    expect(
+      parseServerConfig({
+        IS_PULL_REQUEST: 'true',
+        DATABASE_URL: production,
+        PREVIEW_DATABASE_URL: preview,
+      }),
+    ).toEqual({ isSuccess: true, output: { databaseUrl: preview } })
+
+    expect(parseServerConfig({ IS_PULL_REQUEST: 'true', DATABASE_URL: production })).toEqual({
+      isSuccess: false,
+      error: 'PREVIEW_DATABASE_URL is not set. See .env.example.',
+    })
+  })
+
   test.each([
     { name: 'missing', environment: {}, message: /is not set/ },
     { name: 'empty', environment: { DATABASE_URL: '' }, message: /is not set/ },
