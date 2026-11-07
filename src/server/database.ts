@@ -9,7 +9,7 @@ import { chainSuccess, mapSuccess } from '../lib/result'
 import type { Result } from '../lib/result'
 import { checkDatabaseOwner, parseServerConfig } from '../lib/serverConfig'
 
-export type Database = NodePgDatabase
+type Database = NodePgDatabase
 
 /** The database and a fingerprint of its host. */
 export interface DatabaseConnection {

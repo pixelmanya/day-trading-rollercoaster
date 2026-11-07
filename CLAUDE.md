@@ -7,7 +7,8 @@ pnpm, oxlint, oxfmt, stylelint, Vitest.
 
 ## Commands
 
-- `pnpm check`: format check, lint, typecheck, test, build. Run it before every commit you push.
+- `pnpm check`: format check, lint, knip (unused files, exports, dependencies), typecheck, test,
+  build. Run it before every commit you push.
 - `pnpm format`: fix formatting. `pnpm test:watch` while working on `src/lib`.
 
 ## Rules that matter most
