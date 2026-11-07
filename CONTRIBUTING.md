@@ -440,6 +440,7 @@ src/
     transfer.ts        JSON export file: serialize, parse and validate imports
     serverConfig.ts    Validates the server's environment variables (pure; values passed in)
     authConfig.ts      Validates sign-in settings: secret, address, how links are delivered
+    signInEmail.ts     The sign-in email and the request that sends it through Brevo
     storage/           StorageAdapter type and factory implementations
     *.test.ts          Tests, next to the module they test
   hooks/               React hooks (useAppState: reducer + persistence)

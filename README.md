@@ -70,8 +70,9 @@ The same database guard as the server applies, so a development machine can't mi
 ## Sign-in
 
 Magic links via [Better Auth](https://www.better-auth.com): enter an email, open the link, done. No
-passwords. In development the link is printed in the terminal running `pnpm dev`; on Render the
-server refuses to send links until email delivery is set up (a link in a log is a credential).
+passwords. Links are emailed through [Brevo](https://www.brevo.com) when `BREVO_API_KEY` and
+`MAIL_FROM` are set. Without them, development prints the link in the terminal running `pnpm dev`,
+and Render refuses to send it (a link in a log is a credential).
 
 ## Environments
 
