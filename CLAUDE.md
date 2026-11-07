@@ -34,6 +34,10 @@ pnpm, oxlint, oxfmt, stylelint, Vitest.
   first for functions, `is/has/…` for booleans, `on…` for callback props, `handle…` for handlers.
 - Layout: braces on every block; blank lines around blocks, multi-line statements and before
   `return`. Run `pnpm lint:fix` to apply.
+- Security (see CONTRIBUTING.md): no secrets in the repo, ever. Secrets are runtime env vars
+  (Render dashboard; `.env` locally, git-ignored; names in `.env.example`), read only in server
+  code through one validated config module. `VITE_` and `define` values are public. Never log
+  or return secrets; a leaked key is revoked and rotated, not just deleted.
 - SSR: browser-only APIs (`localStorage`, `window`, `crypto.randomUUID`) only in effects and
   event handlers, never during render. Routes live in `src/routes/` (`export const Route`).
 - Accessibility is required (WCAG 2.2 AA, see CONTRIBUTING.md): native elements first, visible
