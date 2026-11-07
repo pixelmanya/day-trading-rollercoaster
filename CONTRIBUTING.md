@@ -432,6 +432,7 @@ src/
     errors.ts          AppError union and createAppError
     fp.ts              pipe and other tiny FP helpers
     lots.ts            Broker transactions to trades, first in, first out
+    brokers/           BrokerSource interface and one adapter per broker (scalable.ts)
     transfer.ts        JSON export file: serialize, parse and validate imports
     serverConfig.ts    Validates the server's environment variables (pure; values passed in)
     storage/           StorageAdapter type and factory implementations
