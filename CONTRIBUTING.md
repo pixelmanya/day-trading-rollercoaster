@@ -431,6 +431,7 @@ src/
     result.ts          Result type and helpers (succeed, fail, mapSuccess, chainSuccess)
     errors.ts          AppError union and createAppError
     fp.ts              pipe and other tiny FP helpers
+    lots.ts            Broker transactions to trades, first in, first out
     transfer.ts        JSON export file: serialize, parse and validate imports
     storage/           StorageAdapter type and factory implementations
     *.test.ts          Tests, next to the module they test

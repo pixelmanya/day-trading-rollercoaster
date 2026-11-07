@@ -49,6 +49,11 @@ export function computePositionCost({ shares, buyPrice, buyFee }: Position): num
   return shares * buyPrice + buyFee
 }
 
+/** Price per share of an amount paid or received for `shares`, fees included, in €. */
+export function computePricePerShare(amount: number, shares: number): number {
+  return amount / shares
+}
+
 /** Result of selling a position before tax: price difference minus both fees, in €. */
 export function computeSellPretax(
   { shares, buyPrice, buyFee }: Position,
