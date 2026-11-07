@@ -1,5 +1,5 @@
 /** The kinds of expected failure the app handles. */
-export type AppErrorKind = 'invalidState' | 'loadFailed' | 'saveFailed'
+export type AppErrorKind = 'invalidState' | 'importFailed' | 'loadFailed' | 'saveFailed'
 
 /** An expected failure. `message` is written for the user. */
 export interface AppError {

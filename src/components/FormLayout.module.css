@@ -13,6 +13,7 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-10);
   margin-block-start: var(--space-18);
 }
