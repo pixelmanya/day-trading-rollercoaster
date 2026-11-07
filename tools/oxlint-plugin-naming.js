@@ -156,6 +156,7 @@ const verbs = new Set([
   'save',
   'select',
   'sell',
+  'send',
   'serialize',
   'should',
   'show',

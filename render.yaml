@@ -26,6 +26,9 @@ services:
       # Secret: set in the dashboard, never here. sync: false keeps it out of PR previews
       - key: DATABASE_URL
         sync: false
-      # PREVIEW_DATABASE_URL (the Neon "preview" branch), created in the dashboard as an
-      # environment group; previews use it instead of DATABASE_URL
+      # Signs sessions and sign-in links; a different value in the preview-database group
+      - key: BETTER_AUTH_SECRET
+        sync: false
+      # PREVIEW_DATABASE_URL (the Neon "preview" branch) and the previews' BETTER_AUTH_SECRET,
+      # created in the dashboard as an environment group
       - fromGroup: preview-database

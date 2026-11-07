@@ -9,7 +9,7 @@ import { resolveDatabaseTarget } from './databaseTarget'
 import { readEnvironment } from './environment'
 import { schema } from './schema'
 
-type Database = NodePgDatabase<typeof schema>
+export type Database = NodePgDatabase<typeof schema>
 
 /** The database and a fingerprint of its host. */
 export interface DatabaseConnection {
