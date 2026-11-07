@@ -67,6 +67,12 @@ pnpm db:migrate
 Render applies migrations on every deploy, before the build, to that deploy's own database.
 The same database guard as the server applies, so a development machine can't migrate production.
 
+## Sign-in
+
+Magic links via [Better Auth](https://www.better-auth.com): enter an email, open the link, done. No
+passwords. In development the link is printed in the terminal running `pnpm dev`; on Render the
+server refuses to send links until email delivery is set up (a link in a log is a credential).
+
 ## Environments
 
 Each environment has its own database, so development and previews never touch real users' data.

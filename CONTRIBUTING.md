@@ -439,6 +439,7 @@ src/
     brokers/           BrokerSource interface and one adapter per broker (scalable.ts)
     transfer.ts        JSON export file: serialize, parse and validate imports
     serverConfig.ts    Validates the server's environment variables (pure; values passed in)
+    authConfig.ts      Validates sign-in settings: secret, address, how links are delivered
     storage/           StorageAdapter type and factory implementations
     *.test.ts          Tests, next to the module they test
   hooks/               React hooks (useAppState: reducer + persistence)
@@ -448,6 +449,7 @@ src/
     databaseTarget.ts  Which database to use, its fingerprint and guard (shared with drizzle.config.ts)
     database.ts        The Postgres connection (Drizzle)
     schema.ts          Database tables; migrations in drizzle/ (pnpm db:generate)
+    auth.ts            Better Auth: magic-link sign-in and sessions
   components/          One component per file, with its .module.css beside it
   styles/
     tokens.css         Design tokens on :root, incl. dark mode
@@ -788,7 +790,7 @@ Vitest for everything; Testing Library with jsdom for components.
   server routes. Modules that read them are imported only from there, never from components,
   hooks or `src/lib`.
 - One module reads `process.env` (`src/server/environment.ts`); the server parses it with
-  `parseServerConfig`, which returns a `Result` like `parseState`. When something is missing,
+  `parseServerConfig` and `parseAuthConfig`, which return a `Result` like `parseState`. When something is missing,
   everything that needs it fails with that error and `/api/health` reports it, while guest mode
   keeps working. Everything else receives the config as a parameter.
 - Server modules start with `import '@tanstack/react-start/server-only'`; the build fails if

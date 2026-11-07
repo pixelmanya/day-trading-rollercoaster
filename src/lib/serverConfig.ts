@@ -75,7 +75,7 @@ export function checkDatabaseOwner(
 }
 
 /** Render sets RENDER on every deploy and IS_PULL_REQUEST on PR previews. */
-function readDeployment(environment: ServerEnvironment): Deployment {
+export function readDeployment(environment: ServerEnvironment): Deployment {
   if (environment['IS_PULL_REQUEST'] === 'true') {
     return 'preview'
   }
