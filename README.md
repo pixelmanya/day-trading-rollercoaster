@@ -49,6 +49,24 @@ and apply the blueprint. Render validates `render.yaml` and creates the service.
 Previews spin up a few minutes after a PR is opened or updated and stop when it closes. A PR
 opened before the Render service existed gets its preview on its next push.
 
+## Database migrations
+
+Tables are defined in `src/server/schema.ts`. After changing it:
+
+```bash
+pnpm db:generate --name what-changed
+```
+
+This writes a SQL migration to `drizzle/` (commit it; `drizzle/meta/` is generated). Apply it to
+your development database:
+
+```bash
+pnpm db:migrate
+```
+
+Render applies migrations on every deploy, before the build, to that deploy's own database.
+The same database guard as the server applies, so a development machine can't migrate production.
+
 ## Environments
 
 Each environment has its own database, so development and previews never touch real users' data.

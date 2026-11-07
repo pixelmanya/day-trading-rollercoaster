@@ -444,7 +444,10 @@ src/
   hooks/               React hooks (useAppState: reducer + persistence)
   browser/             Browser-only effects (file downloads); called from event handlers
   server/              Server-only modules (import '@tanstack/react-start/server-only'):
-    database.ts        Reads process.env once and holds the Postgres connection (Drizzle)
+    environment.ts     The one reader of process.env
+    databaseTarget.ts  Which database to use, its fingerprint and guard (shared with drizzle.config.ts)
+    database.ts        The Postgres connection (Drizzle)
+    schema.ts          Database tables; migrations in drizzle/ (pnpm db:generate)
   components/          One component per file, with its .module.css beside it
   styles/
     tokens.css         Design tokens on :root, incl. dark mode
@@ -784,7 +787,7 @@ Vitest for everything; Testing Library with jsdom for components.
 - Secrets are read only in server code: TanStack Start server functions (`createServerFn`) and
   server routes. Modules that read them are imported only from there, never from components,
   hooks or `src/lib`.
-- One module reads `process.env` (`src/server/database.ts`): it parses it with
+- One module reads `process.env` (`src/server/environment.ts`); the server parses it with
   `parseServerConfig`, which returns a `Result` like `parseState`. When something is missing,
   everything that needs it fails with that error and `/api/health` reports it, while guest mode
   keeps working. Everything else receives the config as a parameter.
