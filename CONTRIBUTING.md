@@ -690,6 +690,56 @@ Vitest for everything; Testing Library with jsdom for components.
 - Tests are deterministic: pass `today` explicitly instead of reading the clock, and use fake
   timers where time matters.
 
+## Security
+
+### Secrets never enter the repository
+
+- No API keys, tokens, passwords, connection strings or private URLs anywhere in git: not in
+  code, tests, fixtures, docs, comments, commit messages, PR descriptions or screenshots. Tests
+  use obviously fake values (`'test-api-key'`).
+- Secrets are **environment variables injected at runtime**. On Render they are set in the
+  dashboard; `render.yaml` may declare a secret's name with `sync: false`, never its value.
+  Locally they live in `.env`, which git ignores. `.env.example` lists every variable the app
+  reads, with a comment and no real value; update it in the same PR that adds a variable.
+- Keep secrets out of AI tools and chats too. If an assistant or teammate needs access, it gets
+  its own key through the environment, never a pasted one.
+
+### Server-only means server-only
+
+- Anything prefixed `VITE_`, or injected through Vite's `define`, is compiled into the browser
+  bundle and is **public**. Use it only for values anyone may read (the preview label).
+- Secrets are read only in server code: TanStack Start server functions (`createServerFn`) and
+  server routes. Modules that read them are imported only from there, never from components,
+  hooks or `src/lib`.
+- One module reads `process.env`: it parses it into a typed config with a `parse…` function that
+  returns a `Result`, like `parseState`, and the server refuses to start when something is
+  missing. Everything else receives that config as a parameter.
+- Secrets never reach the browser: not in server-function results, loader data, server-rendered
+  HTML, error messages or `localStorage`.
+- Never log secrets, tokens or whole request headers. Log the fact ("Scalable token refreshed"),
+  not the value.
+- Keys that are public by design (such as a Supabase anon key) may be `VITE_` only when access
+  is enforced on the server (row-level security). Keys that bypass it (a service-role key)
+  stay server-only.
+
+### Least privilege and rotation
+
+- Each environment has its own keys: production, PR previews and local development. Previews
+  never get production keys or production data.
+- Ask for the narrowest scope and shortest lifetime a provider offers.
+- A secret that was committed, logged or pasted somewhere public counts as leaked: **revoke and
+  rotate it at once**, then clean up. Deleting it from the code or rewriting git history
+  doesn't make it secret again, because forks, caches and clones keep it.
+
+### Untrusted data and code
+
+- Data from storage, imports, URLs and APIs is validated (`parseState`) before use, and server
+  functions validate their input the same way. Never cast it with `as`.
+- No `eval`, `new Function`, `dangerouslySetInnerHTML` or `javascript:` URLs; external links
+  opened in a new tab get `rel="noopener noreferrer"` (oxlint enforces these).
+- Dependencies are few and pinned (see below). CI installs from the lockfile as committed
+  (`--frozen-lockfile`), and Dependabot updates are reviewed like any other change.
+
 ## Dependencies
 
 - Versions are exact in `package.json` (`save-exact` in `.npmrc`); the lockfile is committed and
