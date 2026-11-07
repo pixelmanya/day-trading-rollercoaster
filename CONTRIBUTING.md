@@ -511,7 +511,13 @@ Rules that keep it that way:
   storage. Components get state and `dispatch` (or narrower callbacks) through props; no context
   or state library until prop-passing hurts.
 - State updates are immutable. Derived values (summary, chart points) are computed from state with
-  `calc.ts` during render (`useMemo` only if profiling shows a need) and never stored.
+  `calc.ts` during render and never stored.
+- **React Compiler** memoizes components and hooks at build time (`vite.config.ts`), so don't
+  write `useMemo`, `useCallback` or `memo`. It needs the
+  [Rules of React](https://react.dev/reference/rules): pure render, no mutating props or state,
+  hooks at the top level. A component that breaks them fails the build instead of quietly
+  staying unoptimized. `'use no memo'` opts a component out; use it only with a comment saying
+  why.
 - Keep components small and presentational. A component that grows past ~150 lines or does two
   jobs gets split.
 - Effects are for syncing with the outside world (storage, the `<dialog>` element), not for

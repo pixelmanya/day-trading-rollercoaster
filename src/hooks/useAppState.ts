@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer } from 'react'
+import { useEffect, useReducer } from 'react'
 import type { Dispatch } from 'react'
 
 import { getToday } from '../lib/format'
@@ -37,13 +37,9 @@ export function useAppState(storage: StorageAdapter): AppStateHandle {
     [storage, appState, revision],
   )
 
-  const dispatchAction = useCallback((action: Action) => {
-    dispatchSession({ type: 'actionDispatched', action })
-  }, [])
-
-  const retrySave = useCallback(() => {
-    dispatchSession({ type: 'saveRetried' })
-  }, [])
+  // React Compiler keeps these stable across renders
+  const dispatchAction = (action: Action) => dispatchSession({ type: 'actionDispatched', action })
+  const retrySave = () => dispatchSession({ type: 'saveRetried' })
 
   return { session, dispatchAction, retrySave }
 }
