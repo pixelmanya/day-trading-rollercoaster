@@ -82,7 +82,13 @@ describe('checkDatabaseOwner', () => {
     expect(checkDatabaseOwner('66b6c6392f90', 'development').isSuccess).toBe(false)
   })
 
-  test('allows development databases anywhere', () => {
+  test('keeps the Neon development database off production and previews', () => {
+    expect(checkDatabaseOwner('ffb84bee09ea', 'development').isSuccess).toBe(true)
+    expect(checkDatabaseOwner('ffb84bee09ea', 'production').isSuccess).toBe(false)
+    expect(checkDatabaseOwner('ffb84bee09ea', 'preview').isSuccess).toBe(false)
+  })
+
+  test('allows unlisted databases, such as a local Postgres, anywhere', () => {
     expect(checkDatabaseOwner('49960de5880e', 'development').isSuccess).toBe(true)
   })
 })
