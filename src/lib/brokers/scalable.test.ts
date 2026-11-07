@@ -21,8 +21,15 @@ function buildEntry(overrides: Readonly<Record<string, unknown>>) {
   }
 }
 
+const lastPage: Page = { cursor: null, pageSize: 20 }
+
 /** The CLI's JSON around `entries`, as one page of `pageSize`. */
-function buildExport(entries: readonly unknown[], { cursor = null, pageSize = 20 } = {}) {
+interface Page {
+  readonly cursor: string | null
+  readonly pageSize: number
+}
+
+function buildExport(entries: readonly unknown[], { cursor, pageSize }: Page = lastPage) {
   return JSON.stringify({
     ok: true,
     command: 'broker.transactions',
@@ -85,20 +92,12 @@ describe('parseScalableExport', () => {
   })
 
   test('warns when a full page came with a cursor to more', () => {
-    const fullPage = buildExport([buildEntry({})], { cursor: '1793206997460|next', pageSize: 1 })
-    const lastPage = buildExport([buildEntry({})], { cursor: '1793206997460|next', pageSize: 20 })
+    const cursor = '1793206997460|next'
+    const fullPage = parseScalableExport(buildExport([buildEntry({})], { cursor, pageSize: 1 }))
+    const partPage = parseScalableExport(buildExport([buildEntry({})], { cursor, pageSize: 20 }))
 
-    expect(
-      parseScalableExport(fullPage).isSuccess && parseScalableExport(fullPage).output,
-    ).toMatchObject({
-      isPossiblyIncomplete: true,
-    })
-
-    expect(
-      parseScalableExport(lastPage).isSuccess && parseScalableExport(lastPage).output,
-    ).toMatchObject({
-      isPossiblyIncomplete: false,
-    })
+    expect(fullPage.isSuccess && fullPage.output.isPossiblyIncomplete).toBe(true)
+    expect(partPage.isSuccess && partPage.output.isPossiblyIncomplete).toBe(false)
   })
 
   test.each([
