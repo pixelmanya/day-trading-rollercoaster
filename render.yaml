@@ -8,7 +8,10 @@ services:
     plan: free
     region: frankfurt
     # pnpm comes from the packageManager field in package.json, via corepack
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    # Migrations run before the build, against this deploy's own database (previews: the preview
+    # branch). They must be backwards compatible: the old version keeps serving until the new one
+    # is live
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm db:migrate && pnpm build
     startCommand: pnpm start
     # / stays up in guest mode even when the database is down; /api/health reports the database
     healthCheckPath: /

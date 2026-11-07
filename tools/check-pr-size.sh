@@ -13,6 +13,7 @@ readonly GENERATED=(
   ':(exclude)pnpm-lock.yaml'
   ':(exclude)src/routeTree.gen.ts'
   ':(exclude,glob)**/*.d.css.ts'
+  ':(exclude)drizzle/meta'
 )
 
 # Binary files report "-" for both counts; they don't add reviewable lines
