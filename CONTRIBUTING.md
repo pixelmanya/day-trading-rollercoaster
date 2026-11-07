@@ -431,9 +431,11 @@ src/
     result.ts          Result type and helpers (succeed, fail, mapSuccess, chainSuccess)
     errors.ts          AppError union and createAppError
     fp.ts              pipe and other tiny FP helpers
+    transfer.ts        JSON export file: serialize, parse and validate imports
     storage/           StorageAdapter type and factory implementations
     *.test.ts          Tests, next to the module they test
   hooks/               React hooks (useAppState: reducer + persistence)
+  browser/             Browser-only effects (file downloads); called from event handlers
   components/          One component per file, with its .module.css beside it
   styles/
     tokens.css         Design tokens on :root, incl. dark mode

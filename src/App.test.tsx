@@ -235,4 +235,54 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: 'Log a buy' })).toBeNull()
     expect(save).not.toHaveBeenCalled()
   })
+
+  test('exports the log as a file and imports one back after a second tap', async () => {
+    const user = userEvent.setup()
+    const stored = { settings: buildSettings(), trades: [buy({ tradeId: 'only', ticker: 'RHM' })] }
+    const { storage, saveSpy } = createFakeStorage({ stored })
+    const createObjectUrl = mocking.fn<(blob: Blob) => string>(() => 'blob:export')
+
+    // jsdom can't download: record the file instead
+    mocking.stubGlobal('URL', {
+      createObjectURL: createObjectUrl,
+      revokeObjectURL: mocking.fn<(url: string) => void>(),
+    })
+
+    const click = mocking.spyOn(HTMLAnchorElement.prototype, 'click').mockReturnValue()
+
+    render(<App storage={storage} />)
+    await user.click(await screen.findByRole('button', { name: 'Settings' }))
+    await user.click(getSheet().getByRole('button', { name: 'Export JSON' }))
+
+    const [firstCall] = createObjectUrl.mock.calls
+    const exportedText = (await firstCall?.[0].text()) ?? ''
+
+    expect(click).toHaveBeenCalledOnce()
+    expect(JSON.parse(exportedText)).toMatchObject({ format: 'trading-log', state: stored })
+    mocking.unstubAllGlobals()
+
+    const file = new File([exportedText], 'log.json', { type: 'application/json' })
+
+    await user.upload(getSheet().getByLabelText('Import JSON'), file)
+    await user.click(getSheet().getByRole('button', { name: 'Replace log with 1 trade' }))
+    await user.click(getSheet().getByRole('button', { name: 'Tap again to replace your log' }))
+
+    expect(saveSpy).toHaveBeenLastCalledWith(stored)
+  })
+
+  test('explains why a file can’t be imported', async () => {
+    const user = userEvent.setup()
+    const { storage } = createFakeStorage()
+
+    render(<App storage={storage} />)
+    await user.click(await screen.findByRole('button', { name: 'Settings' }))
+
+    await user.upload(
+      getSheet().getByLabelText('Import JSON'),
+      new File(['nope'], 'notes.json', { type: 'application/json' }),
+    )
+
+    expect(getSheet().getByText(/isn’t valid JSON/)).toBeTruthy()
+    expect(getSheet().queryByRole('button', { name: /Replace log/ })).toBeNull()
+  })
 })

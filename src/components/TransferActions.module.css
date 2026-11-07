@@ -1,0 +1,48 @@
+/* Its own row under the other extra actions */
+.transfer {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: var(--space-10) var(--space-18);
+  align-items: center;
+  padding-block-start: var(--space-10);
+  border-block-start: var(--hairline) solid var(--grid);
+}
+
+/* Looks like the quiet buttons beside it; the file input inside stays focusable */
+.importLabel {
+  position: relative;
+  padding-block: var(--space-14);
+  padding-inline: var(--space-4);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  cursor: pointer;
+
+  &:focus-within {
+    outline: var(--focus-ring) solid var(--line);
+    outline-offset: var(--focus-offset);
+  }
+}
+
+/* Visually hidden, still reachable by keyboard and screen readers */
+.fileInput {
+  position: absolute;
+  overflow: hidden;
+  inline-size: var(--hairline);
+  block-size: var(--hairline);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Takes its own line under the buttons */
+.error {
+  flex-basis: 100%;
+  font-size: var(--text-13-5);
+  color: var(--loss);
+}
+
+@media (hover: hover) {
+  .importLabel:hover {
+    text-decoration: underline;
+  }
+}
