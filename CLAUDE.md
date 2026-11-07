@@ -52,4 +52,7 @@ pnpm, oxlint, oxfmt, stylelint, Vitest.
   (`feat: …`, `fix(calc): …`). Every commit subject must be one too: PRs merge by squash or
   rebase.
 - Fill in the PR template (Summary, Test plan).
+- Keep PRs small: aim for ≤ 200 changed lines, 400 is the hard limit (`pr-size` check; generated
+  files excluded). One topic per PR; split core before UI, refactor before feature. The
+  `large-pr` label is only for mechanical changes and needs a reason in the description.
 - Ask before adding a runtime dependency.

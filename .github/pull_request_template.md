@@ -13,3 +13,4 @@
 - [ ] UI changes checked in light and dark mode at phone width, on the Render preview
 - [ ] No secrets in the diff; new environment variables are listed in `.env.example` and read only on the server
 - [ ] Accessibility checked (CONTRIBUTING.md → Accessibility): works by keyboard alone, names and labels, contrast in both themes, new widgets tried with a screen reader
+- [ ] Under 400 changed lines and about one topic (the `pr-size` check counts them)
