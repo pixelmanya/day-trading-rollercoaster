@@ -57,4 +57,36 @@ describe('parseAuthConfig', () => {
 
     expect(parsed.isSuccess ? '' : parsed.error).toMatch(message)
   })
+
+  test('sends through Brevo when both settings are there, anywhere', () => {
+    const brevo = { BREVO_API_KEY: 'test-api-key', MAIL_FROM: 'hello@example.com' }
+
+    expect(parseAuthConfig({ BETTER_AUTH_SECRET: secret, ...brevo })).toMatchObject({
+      output: { mailer: { kind: 'brevo', apiKey: 'test-api-key', from: 'hello@example.com' } },
+    })
+
+    expect(
+      parseAuthConfig({
+        BETTER_AUTH_SECRET: secret,
+        RENDER: 'true',
+        RENDER_EXTERNAL_URL: 'https://app.onrender.com',
+        ...brevo,
+      }),
+    ).toMatchObject({
+      output: { mailer: { kind: 'brevo' } },
+    })
+  })
+
+  test.each([
+    { name: 'a key without a sender', mail: { BREVO_API_KEY: 'test-api-key' } },
+    { name: 'a sender without a key', mail: { MAIL_FROM: 'hello@example.com' } },
+    {
+      name: 'a sender that isn’t an address',
+      mail: { BREVO_API_KEY: 'test-api-key', MAIL_FROM: 'hello' },
+    },
+  ])('turns away $name', ({ mail }) => {
+    const parsed = parseAuthConfig({ BETTER_AUTH_SECRET: secret, ...mail })
+
+    expect(parsed.isSuccess ? '' : parsed.error).toMatch(/Set both BREVO_API_KEY and MAIL_FROM/)
+  })
 })

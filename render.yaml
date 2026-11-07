@@ -29,6 +29,12 @@ services:
       # Signs sessions and sign-in links; a different value in the preview-database group
       - key: BETTER_AUTH_SECRET
         sync: false
+      # Sign-in emails: Brevo API key (secret) and verified sender address; previews get theirs
+      # from the preview-database group
+      - key: BREVO_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
       # PREVIEW_DATABASE_URL (the Neon "preview" branch) and the previews' BETTER_AUTH_SECRET,
       # created in the dashboard as an environment group
       - fromGroup: preview-database

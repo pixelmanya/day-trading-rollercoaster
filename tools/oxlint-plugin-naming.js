@@ -113,6 +113,7 @@ const verbs = new Set([
   'draw',
   'encode',
   'ensure',
+  'escape',
   'export',
   'extract',
   'fail',

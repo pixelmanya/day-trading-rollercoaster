@@ -5,9 +5,10 @@ import { magicLink } from 'better-auth/plugins/magic-link'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 
 import { parseAuthConfig } from '../lib/authConfig'
-import type { AuthConfig, Mailer } from '../lib/authConfig'
+import type { AuthConfig, BrevoMailer, Mailer } from '../lib/authConfig'
 import { chainSuccess, mapSuccess } from '../lib/result'
 import type { Result } from '../lib/result'
+import { createBrevoRequest, createSignInEmail } from '../lib/signInEmail'
 import { getDatabase } from './database'
 import type { Database } from './database'
 import { readEnvironment } from './environment'
@@ -48,8 +49,12 @@ function createAuth(database: Database, { secret, baseUrl, mailer }: AuthConfig)
   })
 }
 
-async function sendSignInLink({ kind }: Mailer, { email, url }: MagicLinkDelivery): Promise<void> {
-  if (kind === 'console') {
+async function sendSignInLink(mailer: Mailer, { email, url }: MagicLinkDelivery): Promise<void> {
+  if (mailer.kind === 'brevo') {
+    return sendWithBrevo(mailer, { email, url })
+  }
+
+  if (mailer.kind === 'console') {
     // Development only: a sign-in link in a log is a credential
     console.info(`Sign-in link for ${email}: ${url}`)
 
@@ -57,4 +62,17 @@ async function sendSignInLink({ kind }: Mailer, { email, url }: MagicLinkDeliver
   }
 
   throw new Error('Sign-in emails aren’t set up on this server yet.')
+}
+
+/** Send the link by email. Errors name the status only, never the key or the link. */
+async function sendWithBrevo(
+  mailer: BrevoMailer,
+  { email, url }: MagicLinkDelivery,
+): Promise<void> {
+  const request = createBrevoRequest(mailer, email, createSignInEmail(url))
+  const response = await fetch(request.url, request.init)
+
+  if (!response.ok) {
+    throw new Error(`Brevo didn’t accept the sign-in email (HTTP ${response.status}).`)
+  }
 }
