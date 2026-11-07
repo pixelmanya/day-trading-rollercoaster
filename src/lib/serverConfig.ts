@@ -5,6 +5,8 @@ import type { Result } from './result'
 export interface ServerConfig {
   /** Postgres connection string, e.g. Neon's "postgresql://…?sslmode=require". */
   readonly databaseUrl: string
+  /** The database server's host name, for a fingerprint that tells databases apart. */
+  readonly databaseHost: string
 }
 
 /** Environment variables as the process sees them. */
@@ -29,9 +31,18 @@ export function parseServerConfig(environment: ServerEnvironment): Result<Server
     return fail(`${variable} is not set. See .env.example.`)
   }
 
-  if (!POSTGRES_URL.test(databaseUrl)) {
+  const databaseHost = readPostgresHost(databaseUrl)
+
+  if (databaseHost === null) {
     return fail(`${variable} must be a postgres:// or postgresql:// connection string.`)
   }
 
-  return succeed({ databaseUrl })
+  return succeed({ databaseUrl, databaseHost })
+}
+
+/** The host of a postgres:// connection string; null if it isn't one or has no host. */
+function readPostgresHost(databaseUrl: string): string | null {
+  const host = URL.canParse(databaseUrl) ? new URL(databaseUrl).hostname : ''
+
+  return POSTGRES_URL.test(databaseUrl) && host !== '' ? host : null
 }

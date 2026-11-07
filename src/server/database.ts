@@ -1,4 +1,6 @@
 import '@tanstack/react-start/server-only'
+import { createHash } from 'node:crypto'
+
 import { drizzle } from 'drizzle-orm/node-postgres'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
@@ -9,17 +11,35 @@ import { parseServerConfig } from '../lib/serverConfig'
 
 export type Database = NodePgDatabase
 
+/** The database and a fingerprint of its host. */
+export interface DatabaseConnection {
+  readonly database: Database
+  /**
+   * First 12 hex characters of the host name's SHA-256: tells production and preview databases
+   * apart in /api/health without revealing the host.
+   */
+  readonly fingerprint: string
+}
+
+const FINGERPRINT_LENGTH = 12
+
 /*
  * The one module that reads process.env. The pool connects lazily, on the first query, so the
  * app still serves guest mode without a database; database work then gets the config error,
  * and /api/health reports it.
  */
-const connection: Result<Database, string> = mapSuccess(
+const connection: Result<DatabaseConnection, string> = mapSuccess(
   parseServerConfig(process.env),
-  ({ databaseUrl }) => drizzle(new Pool({ connectionString: databaseUrl, max: 5 })),
+  ({ databaseUrl, databaseHost }) => ({
+    database: drizzle(new Pool({ connectionString: databaseUrl, max: 5 })),
+    fingerprint: createHash('sha256')
+      .update(databaseHost)
+      .digest('hex')
+      .slice(0, FINGERPRINT_LENGTH),
+  }),
 )
 
 /** The database, or why there is none (safe to log: it never contains the secret). */
-export function getDatabase(): Result<Database, string> {
+export function getDatabase(): Result<DatabaseConnection, string> {
   return connection
 }
