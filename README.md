@@ -49,5 +49,23 @@ and apply the blueprint. Render validates `render.yaml` and creates the service.
 Previews spin up a few minutes after a PR is opened or updated and stop when it closes. A PR
 opened before the Render service existed gets its preview on its next push.
 
+## Environments
+
+Each environment has its own database, so development and previews never touch real users' data.
+
+| Environment | Runs on                      | Database                                       | Set in                                                                |
+| ----------- | ---------------------------- | ---------------------------------------------- | --------------------------------------------------------------------- |
+| Production  | Render, live service         | Neon `production` branch                       | Render → service → Environment: `DATABASE_URL`                        |
+| Preview     | Render, one per pull request | Neon `preview` branch                          | Render → environment group `preview-database`: `PREVIEW_DATABASE_URL` |
+| Development | Your machine                 | Neon `development` branch, or a local Postgres | `.env` (git-ignored): `DATABASE_URL`                                  |
+
+The Neon `preview` and `development` branches are created with **Branch schema only** (no data
+copied from production) and **Auto-delete: Never**. Never use "Reset from parent" on them.
+
+`/api/health` shows a `fingerprint` of the database in use (a hash of its host, never the host).
+The server refuses a database that belongs to another environment: the production database works
+only on the live service, the preview database only on previews (`src/lib/serverConfig.ts` lists
+their fingerprints).
+
 How the code is written, and how changes get onto `main`, is described in
 [CONTRIBUTING.md](CONTRIBUTING.md).

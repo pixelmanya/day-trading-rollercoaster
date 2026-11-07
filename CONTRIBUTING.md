@@ -792,6 +792,8 @@ Vitest for everything; Testing Library with jsdom for components.
 
 - Each environment has its own keys: production, PR previews and local development. Previews
   never get production keys or production data.
+- Each environment has its own database (README → Environments). The server checks the
+  database's fingerprint and refuses one that belongs to another environment.
 - Ask for the narrowest scope and shortest lifetime a provider offers.
 - A secret that was committed, logged or pasted somewhere public counts as leaked: **revoke and
   rotate it at once**, then clean up. Deleting it from the code or rewriting git history
