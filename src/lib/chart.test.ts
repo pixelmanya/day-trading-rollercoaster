@@ -19,12 +19,16 @@ import {
 
 describe('computeChartGeometry', () => {
   test('draws a flat line before the first closed trade', () => {
-    expect(computeChartGeometry([1000], 1000)).toEqual({ kind: 'flat', lineY: CHART_HEIGHT / 2 })
-    expect(computeChartGeometry([], 1000)).toEqual({ kind: 'flat', lineY: CHART_HEIGHT / 2 })
+    expect(computeChartGeometry([1000], [1000], 1000)).toEqual({
+      kind: 'flat',
+      lineY: CHART_HEIGHT / 2,
+    })
+
+    expect(computeChartGeometry([], [], 1000)).toEqual({ kind: 'flat', lineY: CHART_HEIGHT / 2 })
   })
 
   test('draws straight lines from the start budget to each later balance', () => {
-    const geometry = computeChartGeometry([100, 150], 100)
+    const geometry = computeChartGeometry([100, 150], [100, 150], 100)
 
     // x runs from the padding (8) to width − padding (512). The data spans 92.5–157.5 with
     // headroom, mapped onto y 142 (bottom) to 8 (top): 100 → 126.54, 150 → 23.46
@@ -38,8 +42,21 @@ describe('computeChartGeometry', () => {
     })
   })
 
+  test('draws the balance before fees and tax, and the gap down to the real balance', () => {
+    const geometry = computeChartGeometry([100, 140], [100, 150], 100)
+
+    // The scale covers both lines, so the gross line reaches the top and the net line stays below
+    expect(geometry).toMatchObject({
+      kind: 'line',
+      grossPath: expect.stringMatching(/^M8,126\.5\d+ L512,23\.4\d+$/),
+      costAreaPath: expect.stringMatching(
+        /^M8,126\.5\d+ L512,23\.4\d+ L512,44\.0\d+ L8,126\.5\d+ Z$/,
+      ),
+    })
+  })
+
   test('still gives a flat series a visible range', () => {
-    const geometry = computeChartGeometry([100, 100], 100)
+    const geometry = computeChartGeometry([100, 100], [100, 100], 100)
 
     expect(geometry.kind === 'line' && geometry.endY).toBeCloseTo(CHART_HEIGHT / 2, 6)
   })
@@ -53,7 +70,7 @@ const points = [
 
 describe('chart points', () => {
   test('come with step geometry, one per balance', () => {
-    const geometry = computeChartGeometry([100, 150, 120], 100)
+    const geometry = computeChartGeometry([100, 150, 120], [100, 150, 120], 100)
 
     expect(geometry.kind === 'line' && geometry.points.map(({ positionX }) => positionX)).toEqual([
       8, 260, 512,
@@ -139,7 +156,7 @@ describe('computeNiceTicks', () => {
 
 describe('chart ticks', () => {
   test('come with line geometry, inside the visible range', () => {
-    const geometry = computeChartGeometry([1000, 1100, 1050], 1000)
+    const geometry = computeChartGeometry([1000, 1100, 1050], [1000, 1100, 1050], 1000)
     const ticks = geometry.kind === 'line' ? geometry.ticks : []
 
     expect(ticks.map(({ amount }) => amount)).toEqual([1000, 1050, 1100])

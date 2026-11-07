@@ -40,7 +40,12 @@ export function formatSignedEuro(amount: number): string {
 
 /** Format a win rate as a whole percentage, or "–" before there is one: 0.666 → "67 %". */
 export function formatWinRate(winRate: number | null): string {
-  return winRate === null ? '–' : `${Math.round(winRate * 100)} %`
+  return winRate === null ? '–' : formatShare(winRate)
+}
+
+/** Format a share as a whole percentage without a sign: 0.496 → "50 %". */
+export function formatShare(ratio: number): string {
+  return `${Math.round(ratio * 100)} %`
 }
 
 /** Format a signed euro amount, or "–" when there is none yet. */

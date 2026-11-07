@@ -180,7 +180,7 @@ function describePoint(point: RangePoint | undefined): string {
   const label =
     closedResult === null
       ? 'Start of period'
-      : `${formatShortDate(closedResult.trade.sellDate)} ${closedResult.trade.ticker} ${formatSignedEuro(closedResult.net)}`
+      : `${formatShortDate(closedResult.trade.sellDate)} ${closedResult.trade.ticker} ${formatSignedEuro(closedResult.net)}, fees ${formatEuro(closedResult.fees)}, tax ${formatEuro(closedResult.tax)}`
 
   return `${label}, balance ${formatEuro(balance)}`
 }

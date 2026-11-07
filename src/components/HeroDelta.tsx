@@ -1,5 +1,5 @@
 import { getTone } from '../lib/calc'
-import { formatPercent, formatShortDate, formatSignedEuro } from '../lib/format'
+import { formatEuro, formatPercent, formatShortDate, formatSignedEuro } from '../lib/format'
 import type { SelectionSummary } from '../lib/selection'
 import { Icon } from './Icon'
 
@@ -32,14 +32,14 @@ export function HeroDelta({
     )
   }
 
-  const { fromDate, toDate, tradeCount } = selection
+  const { fromDate, toDate, tradeCount, costs } = selection
 
   return (
     <div className={styles.delta} aria-live="polite">
       <ChangeChip change={selection.change} changeRatio={selection.changeRatio} />
       <span className={styles.from}>
         {formatEnd(fromDate)} → {formatEnd(toDate)} · {tradeCount}{' '}
-        {tradeCount === 1 ? 'trade' : 'trades'}
+        {tradeCount === 1 ? 'trade' : 'trades'} · {formatEuro(costs)} fees and tax
       </span>
       <button type="button" className={styles.clearButton} onClick={onClearSelection}>
         <Icon name="close" />

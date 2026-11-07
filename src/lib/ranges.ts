@@ -10,6 +10,8 @@ export type ChartRange = (typeof CHART_RANGES)[number]
 /** One point of the chart: the balance after a closed trade, or at the range's start. */
 export interface RangePoint {
   readonly balance: number
+  /** The balance had the range's trades cost no fees and no tax. */
+  readonly grossBalance: number
   /** The trade that produced this balance; null for the range's starting point. */
   readonly closedResult: ClosedResult | null
 }
@@ -21,6 +23,10 @@ export interface RangeSeries {
   readonly startBalance: number
   readonly change: number
   readonly changeRatio: number
+  /** Fees and tax of the trades in the range: what separates the gross and net lines. */
+  readonly costs: number
+  /** costs ÷ the gain before them; null unless the range gained before costs. */
+  readonly costShare: number | null
 }
 
 export interface RangeInput {
@@ -31,6 +37,7 @@ export interface RangeInput {
 
 interface PointTrace {
   readonly balance: number
+  readonly grossBalance: number
   readonly points: readonly [RangePoint, ...RangePoint[]]
 }
 
@@ -73,20 +80,45 @@ export function computeRangeSeries(
 
   const startTrace: PointTrace = {
     balance: startBalance,
-    points: [{ balance: startBalance, closedResult: null }],
+    grossBalance: startBalance,
+    points: [{ balance: startBalance, grossBalance: startBalance, closedResult: null }],
   }
 
-  const { balance: endBalance, points } = closedResults
+  const endTrace = closedResults
     .filter((closedResult) => isInRange(closedResult))
     .reduce((trace, closedResult) => addPoint(trace, closedResult), startTrace)
 
-  const change = endBalance - startBalance
-
-  return { points, startBalance, change, changeRatio: change / startBalance }
+  return { points: endTrace.points, startBalance, ...computeRangeChange(startBalance, endTrace) }
 }
 
-function addPoint({ balance, points }: PointTrace, closedResult: ClosedResult): PointTrace {
-  const nextBalance = balance + closedResult.net
+/** How the balance changed from the range's start, and what fees and tax took. */
+function computeRangeChange(
+  startBalance: number,
+  { balance, grossBalance }: PointTrace,
+): Omit<RangeSeries, 'points' | 'startBalance'> {
+  const change = balance - startBalance
+  const costs = grossBalance - balance
+  const grossChange = grossBalance - startBalance
 
-  return { balance: nextBalance, points: [...points, { balance: nextBalance, closedResult }] }
+  return {
+    change,
+    changeRatio: change / startBalance,
+    costs,
+    costShare: grossChange > 0 ? costs / grossChange : null,
+  }
+}
+
+/** The next point: net adds to the balance, gross (before fees and tax) to the gross balance. */
+function addPoint(
+  { balance, grossBalance, points }: PointTrace,
+  closedResult: ClosedResult,
+): PointTrace {
+  const nextBalance = balance + closedResult.net
+  const nextGrossBalance = grossBalance + closedResult.gross
+
+  return {
+    balance: nextBalance,
+    grossBalance: nextGrossBalance,
+    points: [...points, { balance: nextBalance, grossBalance: nextGrossBalance, closedResult }],
+  }
 }
