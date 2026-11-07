@@ -11,7 +11,7 @@ const EXPORT_FORMAT = 'trading-log'
 const EXPORT_VERSION = 1
 
 /** The export file: what it is, which version, when it was made, and the log itself. */
-export interface ExportFile {
+interface ExportFile {
   readonly format: typeof EXPORT_FORMAT
   readonly version: typeof EXPORT_VERSION
   /** Local date of the export, YYYY-MM-DD. */

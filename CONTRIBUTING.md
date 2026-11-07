@@ -12,22 +12,26 @@ pnpm install
 pnpm dev
 ```
 
-| Script              | What it does                                          |
-| ------------------- | ----------------------------------------------------- |
-| `pnpm start`        | Run the production build (`.output/server/index.mjs`) |
-| `pnpm dev`          | Vite dev server                                       |
-| `pnpm format`       | Format everything with oxfmt                          |
-| `pnpm format:check` | Fail if anything is unformatted (CI)                  |
-| `pnpm lint:fix`     | Autofix lint issues (braces, blank lines) and format  |
-| `pnpm lint`         | oxlint (TS/TSX) + stylelint (CSS), warnings fail (CI) |
-| `pnpm typecheck`    | `tsc -b` (CI)                                         |
-| `pnpm test`         | Vitest once (CI); `pnpm test:watch` while working     |
-| `pnpm build`        | Typecheck + production build (CI)                     |
-| `pnpm check`        | All of the above in CI order — run before pushing     |
+| Script              | What it does                                                           |
+| ------------------- | ---------------------------------------------------------------------- |
+| `pnpm start`        | Run the production build (`.output/server/index.mjs`)                  |
+| `pnpm dev`          | Vite dev server                                                        |
+| `pnpm format`       | Format everything with oxfmt                                           |
+| `pnpm format:check` | Fail if anything is unformatted (CI)                                   |
+| `pnpm lint:fix`     | Autofix lint issues (braces, blank lines) and format                   |
+| `pnpm lint`         | oxlint (TS/TSX) + stylelint (CSS), warnings fail (CI)                  |
+| `pnpm knip`         | Unused files, exports and dependencies ([Knip](https://knip.dev)) (CI) |
+| `pnpm typecheck`    | `tsc -b` (CI)                                                          |
+| `pnpm test`         | Vitest once (CI); `pnpm test:watch` while working                      |
+| `pnpm build`        | Typecheck + production build (CI)                                      |
+| `pnpm check`        | All of the above in CI order — run before pushing                      |
 
 `pnpm install` also installs the git hooks (lefthook). On every commit they format staged files with
 oxfmt (and re-stage them) and lint them with oxlint and stylelint. Don't skip them with
 `--no-verify`; if a hook is wrong, fix the hook.
+
+Knip fails on code nothing uses: delete it rather than silencing Knip. Export only what other
+files import, and add a dependency in the PR that first uses it.
 
 ## Formatting
 
@@ -821,7 +825,8 @@ Vitest for everything; Testing Library with jsdom for components.
 ## Git and pull requests
 
 - `main` is protected by a ruleset (`.github/rulesets/main.json`): changes land through pull
-  requests that pass the required checks `check` (format, lint, typecheck, test, build),
+  requests that pass the required checks `check` (format, lint, unused code, typecheck, test,
+  build),
   `pr-title` and `pr-size`. No direct pushes, no force pushes, no deleting `main`.
 - Work on a short-lived branch per change.
 - **Commits follow [Conventional Commits](https://www.conventionalcommits.org/):**

@@ -33,7 +33,7 @@ export interface ChartPoint {
 }
 
 /** Where a tooltip sits next to its point, vertically. */
-export type TooltipPlacement = 'middle' | 'above' | 'below'
+type TooltipPlacement = 'middle' | 'above' | 'below'
 
 /**
  * Tooltip anchor in percent of the chart's box. It opens to the right of its point; near the
