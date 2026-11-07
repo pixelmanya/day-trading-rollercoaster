@@ -703,8 +703,8 @@ Vitest for everything; Testing Library with jsdom for components.
 ## Git and pull requests
 
 - `main` is protected by a ruleset (`.github/rulesets/main.json`): changes land through pull
-  requests that pass the required checks `check` (format, lint, typecheck, test, build) and
-  `pr-title`. No direct pushes, no force pushes, no deleting `main`.
+  requests that pass the required checks `check` (format, lint, typecheck, test, build),
+  `pr-title` and `pr-size`. No direct pushes, no force pushes, no deleting `main`.
 - Work on a short-lived branch per change.
 - **Commits follow [Conventional Commits](https://www.conventionalcommits.org/):**
   `type(optional scope): summary` in the imperative, lowercase, no trailing period.
@@ -720,3 +720,26 @@ Vitest for everything; Testing Library with jsdom for components.
 - Every PR gets a Render preview (see `render.yaml`); its link appears on the PR. Check UI
   changes there, on a phone if you can, before merging.
 - Keep PRs focused; unrelated cleanups go in their own PR.
+
+### Small pull requests
+
+Reviewers catch defects well up to a few hundred changed lines; beyond that, reviews turn into
+skimming. So PRs stay small enough to review properly in one sitting.
+
+- **Aim for 200 changed lines or fewer; 400 is the limit.** Lines are additions plus deletions,
+  tests and docs included; generated files (`pnpm-lock.yaml`, `src/routeTree.gen.ts`,
+  `*.d.css.ts`) don't count. The `pr-size` check warns above 200 and fails above 400
+  (`tools/check-pr-size.sh`; run it locally with
+  `BASE_SHA=origin/main HEAD_SHA=HEAD tools/check-pr-size.sh`).
+- **One topic per PR.** A feature and an unrelated docs change are two PRs, even when both are
+  small.
+- **Split big changes** along their seams, each PR working and green on its own:
+  - core before UI: the `src/lib` functions and their tests first, then the components;
+  - refactor before feature: a behaviour-preserving cleanup lands first, then the change it
+    enables;
+  - one slice at a time: a feature visible end to end in its simplest form, then refinements;
+  - stacked PRs when a part depends on one not yet merged. Start the next branch from `main`
+    once the previous PR has merged, so a rebase merge doesn't replay already-merged commits.
+- **The `large-pr` label** lets a PR over the limit pass. Use it only for mechanical changes
+  that are read at a glance (a rename, moving files, a dependency bump), and say in the
+  description why the change can't be split.

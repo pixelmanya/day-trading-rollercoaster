@@ -11,3 +11,4 @@
 - [ ] `pnpm check` passes locally
 - [ ] Money/tax math changes are covered in `src/lib/*.test.ts`
 - [ ] UI changes checked in light and dark mode at phone width, on the Render preview
+- [ ] Under 400 changed lines and about one topic (the `pr-size` check counts them)
