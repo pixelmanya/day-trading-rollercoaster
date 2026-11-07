@@ -40,6 +40,9 @@ pnpm, oxlint, oxfmt, stylelint, Vitest.
   or return secrets; a leaked key is revoked and rotated, not just deleted.
 - SSR: browser-only APIs (`localStorage`, `window`, `crypto.randomUUID`) only in effects and
   event handlers, never during render. Routes live in `src/routes/` (`export const Route`).
+- Accessibility is required (WCAG 2.2 AA, see CONTRIBUTING.md): native elements first, visible
+  labels, everything works by keyboard, Escape dismisses hover/focus content, never colour alone,
+  contrast 4.5:1 for text and 3:1 for graphics in both themes, targets ≥ 24 px, reduced motion.
 - Keep UI copy and visuals identical to the original unless the task says otherwise.
 - Dates are local `YYYY-MM-DD` via `getToday()`; never `toISOString()` for dates.
 
