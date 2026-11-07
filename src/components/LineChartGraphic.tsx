@@ -52,6 +52,14 @@ export function LineChartGraphic({
       />
       {selected === null ? null : <SelectionShade geometry={geometry} selected={selected} />}
       <g className={isDimmed ? `${styles.reveal} ${styles.dimmed}` : styles.reveal}>
+        {/* What fees and tax took: the gap up to the balance before them */}
+        <path className={styles.costArea} d={geometry.costAreaPath} />
+        <path
+          className={styles.grossLine}
+          d={geometry.grossPath}
+          strokeDasharray="3 4"
+          vectorEffect="non-scaling-stroke"
+        />
         <path d={geometry.areaPath} fill={`url(#${gradientId})`} />
         <path className={styles.line} d={geometry.linePath} vectorEffect="non-scaling-stroke" />
       </g>

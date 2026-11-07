@@ -32,6 +32,9 @@ export function ChartTooltip({
           <span className={styles[getTone(closedResult.net)]}>
             {formatSignedEuro(closedResult.net)}
           </span>
+          <span className={styles.costs}>
+            Fees {formatEuro(closedResult.fees)} · Tax {formatEuro(closedResult.tax)}
+          </span>
         </>
       )}
       <span className={styles.balance}>Balance {formatEuro(balance)}</span>

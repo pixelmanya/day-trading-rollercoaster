@@ -36,6 +36,18 @@
   stroke-linejoin: round;
 }
 
+/* The balance before fees and tax, and the gap down to the real one */
+.grossLine {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.costArea {
+  fill: var(--loss-soft);
+}
+
 /* The line and its area draw in from left to right */
 .reveal {
   transition: opacity var(--duration-base) var(--ease-out);

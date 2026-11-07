@@ -74,6 +74,7 @@
   --space-96: 96px;
 
   /* Radius */
+  --radius-2: 2px;
   --radius-6: 6px;
   --radius-12: 12px;
   --radius-14: 14px;
@@ -89,6 +90,9 @@
   --focus-offset: 2px;
 
   /* Layout */
+
+  /* Smallest pointer target (WCAG 2.2 target size, AA) */
+  --target-min: 24px;
   --content-max: 560px;
 
   /* Desktop (from 1024px): full-bleed hero on the left half, trades centered on the right */

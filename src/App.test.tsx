@@ -193,11 +193,35 @@ describe('App', () => {
     screen.getByRole('slider', { name: /Balance after each closed trade/ }).focus()
     await user.keyboard('{Shift>}{ArrowLeft}{ArrowLeft}{/Shift}')
 
-    expect(screen.getByText(/→ .* · 2 trades/)).toBeTruthy()
+    expect(screen.getByText(/→ .* · 2 trades · [\d,]+ € fees and tax/)).toBeTruthy()
 
     await user.click(screen.getByRole('button', { name: /Clear/ }))
 
     expect(screen.queryByText(/→ .* · 2 trades/)).toBeNull()
+  })
+
+  test('shows what fees and tax took, and Escape dismisses the chart tooltip', async () => {
+    const user = userEvent.setup()
+    const { storage } = createFakeStorage()
+
+    render(<App storage={storage} />)
+    await user.click(await screen.findByRole('button', { name: 'Settings' }))
+    await user.click(getSheet().getByRole('button', { name: 'Load demo data' }))
+    await user.click(getSheet().getByRole('button', { name: 'Tap again to replace your log' }))
+
+    expect(screen.getByText(/Fees and tax took/).textContent).toMatch(/% of the gains/)
+
+    const chart = screen.getByRole('slider', { name: /Balance after each closed trade/ })
+
+    chart.focus()
+    await user.keyboard('{ArrowLeft}')
+
+    expect(screen.getByText(/^Fees [\d,]+ € · Tax/)).toBeTruthy()
+    expect(chart.getAttribute('aria-valuetext')).toMatch(/fees .*, tax /)
+
+    await user.keyboard('{Escape}')
+
+    expect(screen.queryByText(/^Balance \d/)).toBeNull()
   })
 
   test('never saves over data it could not read', async () => {

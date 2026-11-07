@@ -58,6 +58,10 @@ export type ChartGeometry =
       readonly kind: 'line'
       readonly linePath: string
       readonly areaPath: string
+      /** The balance before fees and tax, drawn faintly above the real one. */
+      readonly grossPath: string
+      /** The gap between the gross and net lines: what fees and tax took. */
+      readonly costAreaPath: string
       /** Height of the start budget, drawn as a dashed baseline. */
       readonly baselineY: number
       readonly endX: number
@@ -68,6 +72,11 @@ export type ChartGeometry =
       readonly ticks: readonly ChartTick[]
     }
 
+interface LineTrace {
+  readonly last: number
+  readonly linePath: string
+}
+
 interface ChartScale {
   readonly toX: (index: number) => number
   readonly toY: (amount: number) => number
@@ -76,46 +85,69 @@ interface ChartScale {
   readonly top: number
 }
 
-interface LineTrace {
-  readonly last: number
-  readonly segments: readonly string[]
-}
-
-/** Chart geometry for a balance series (start budget first) from computeBalanceSeries. */
-export function computeChartGeometry(balances: readonly number[], start: number): ChartGeometry {
+/**
+ * Chart geometry for a balance series (the period's start first) and the same series before
+ * fees and tax, one gross balance per balance.
+ */
+export function computeChartGeometry(
+  balances: readonly number[],
+  grossBalances: readonly number[],
+  start: number,
+): ChartGeometry {
   const [firstBalance, ...laterBalances] = balances
 
   if (firstBalance === undefined || laterBalances.length === 0) {
     return { kind: 'flat', lineY: CHART_HEIGHT / 2 }
   }
 
-  const { toX, toY, bottom, top } = createChartScale(balances, start)
-  const firstTrace: LineTrace = { last: firstBalance, segments: [] }
+  const { toX, toY, bottom, top } = createChartScale(balances, grossBalances, start)
+  const points = toChartPoints(balances, { toX, toY })
+  const grossPath = computeSegmentPath(toChartPoints(grossBalances, { toX, toY }), 0, points.length)
 
-  const { last: lastBalance, segments } = laterBalances.reduce(
-    ({ segments: traced }, amount, offset) => ({
-      last: amount,
-      segments: [...traced, `L${toX(offset + 1)},${toY(amount)}`],
-    }),
-    firstTrace,
-  )
+  const { last: lastBalance, linePath } = computeLineTrace(firstBalance, laterBalances, {
+    toX,
+    toY,
+  })
 
-  const linePath = [`M${toX(0)},${toY(firstBalance)}`, ...segments].join(' ')
   const endX = toX(laterBalances.length)
 
   return {
     kind: 'line',
     linePath,
     areaPath: `${linePath} L${endX},${CHART_HEIGHT} L${toX(0)},${CHART_HEIGHT} Z`,
+    grossPath,
+    costAreaPath: `${grossPath} ${computeReturnPath(points)} Z`,
     baselineY: toY(start),
     endX,
     endY: toY(lastBalance),
-    points: balances.map((amount, index) => ({ positionX: toX(index), positionY: toY(amount) })),
-    ticks: computeNiceTicks(bottom, top, Y_TICK_TARGET).map((amount) => ({
-      amount,
-      positionY: toY(amount),
-    })),
+    points,
+    ticks: computeTickPositions({ toY, bottom, top }),
   }
+}
+
+/** The net line's path and the last balance it reaches. */
+function computeLineTrace(
+  firstBalance: number,
+  laterBalances: readonly number[],
+  { toX, toY }: Pick<ChartScale, 'toX' | 'toY'>,
+): LineTrace {
+  const firstTrace: LineTrace = { last: firstBalance, linePath: `M${toX(0)},${toY(firstBalance)}` }
+
+  return laterBalances.reduce(
+    ({ linePath }, amount, offset) => ({
+      last: amount,
+      linePath: `${linePath} L${toX(offset + 1)},${toY(amount)}`,
+    }),
+    firstTrace,
+  )
+}
+
+/** Round balances to label on the y axis, at their heights. */
+function computeTickPositions({ toY, bottom, top }: Omit<ChartScale, 'toX'>): readonly ChartTick[] {
+  return computeNiceTicks(bottom, top, Y_TICK_TARGET).map((amount) => ({
+    amount,
+    positionY: toY(amount),
+  }))
 }
 
 /**
@@ -248,9 +280,29 @@ function getFlippedPlacement(positionY: number, previous: ChartPoint | null): To
   return previous.positionY >= positionY ? 'above' : 'below'
 }
 
-function createChartScale(balances: readonly number[], start: number): ChartScale {
-  const lowest = Math.min(...balances, start)
-  const highest = Math.max(...balances, start)
+function toChartPoints(
+  amounts: readonly number[],
+  { toX, toY }: Pick<ChartScale, 'toX' | 'toY'>,
+): readonly ChartPoint[] {
+  return amounts.map((amount, index) => ({ positionX: toX(index), positionY: toY(amount) }))
+}
+
+/** Line segments through the points from last to first, to close an area. */
+function computeReturnPath(points: readonly ChartPoint[]): string {
+  return points
+    .toReversed()
+    .map(({ positionX, positionY }) => `L${positionX},${positionY}`)
+    .join(' ')
+}
+
+/** The scale fits both lines and the start budget; x steps by the balances' count. */
+function createChartScale(
+  balances: readonly number[],
+  grossBalances: readonly number[],
+  start: number,
+): ChartScale {
+  const lowest = Math.min(...balances, ...grossBalances, start)
+  const highest = Math.max(...balances, ...grossBalances, start)
   // A flat series still needs a visible range
   const span = highest - lowest || Math.max(start * 0.1, 1)
   const bottom = lowest - span * HEADROOM
