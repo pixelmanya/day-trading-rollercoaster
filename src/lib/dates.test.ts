@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { addDays, addMonths, addYears, toIsoDate } from './dates'
+import { addDays, addMonths, addYears, toIsoDate, toZonedIsoDate } from './dates'
 
 describe('toIsoDate', () => {
   test('formats a UTC date', () => {
@@ -30,5 +30,13 @@ describe('addYears', () => {
   test('moves by years and clamps leap days', () => {
     expect(addYears('2026-11-06', -1)).toBe('2025-11-06')
     expect(addYears('2028-02-29', -1)).toBe('2027-02-28')
+  })
+})
+
+describe('toZonedIsoDate', () => {
+  test('gives the calendar date in the time zone, across midnight and daylight saving', () => {
+    expect(toZonedIsoDate('2026-11-06T23:30:00Z', 'Europe/Berlin')).toBe('2026-11-07')
+    expect(toZonedIsoDate('2026-07-01T21:59:00Z', 'Europe/Berlin')).toBe('2026-07-01')
+    expect(toZonedIsoDate('2026-07-01T22:00:00Z', 'Europe/Berlin')).toBe('2026-07-02')
   })
 })
