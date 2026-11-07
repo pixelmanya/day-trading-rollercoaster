@@ -19,13 +19,14 @@ export type ServerEnvironment = Readonly<Record<string, string | undefined>>
 const POSTGRES_URL = /^postgres(ql)?:\/\/\S+$/
 
 /**
- * Fingerprints (see src/server/database.ts) of the databases that belong to one deployment.
- * Not secret: a hash of the host. Update when a database moves. Development databases (a Neon
- * "development" branch, local Postgres) are not listed: they work anywhere but production.
+ * Fingerprints (see src/server/database.ts) of the Neon databases that belong to one deployment.
+ * Not secret: a hash of the host. Update when a database moves. Unlisted databases, such as a
+ * local Postgres, are allowed anywhere.
  */
-const databaseOwners: Readonly<Record<string, Exclude<Deployment, 'development'>>> = {
+const databaseOwners: Readonly<Record<string, Deployment>> = {
   a37255697dd9: 'production',
   '66b6c6392f90': 'preview',
+  ffb84bee09ea: 'development',
 }
 
 /**

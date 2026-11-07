@@ -63,9 +63,14 @@ The Neon `preview` and `development` branches are created with **Branch schema o
 copied from production) and **Auto-delete: Never**. Never use "Reset from parent" on them.
 
 `/api/health` shows a `fingerprint` of the database in use (a hash of its host, never the host).
-The server refuses a database that belongs to another environment: the production database works
-only on the live service, the preview database only on previews (`src/lib/serverConfig.ts` lists
-their fingerprints).
+The server refuses a database that belongs to another environment: each Neon branch works only in
+its own environment. Their fingerprints, listed in `src/lib/serverConfig.ts`:
+
+| Neon branch   | Fingerprint    |
+| ------------- | -------------- |
+| `production`  | `a37255697dd9` |
+| `preview`     | `66b6c6392f90` |
+| `development` | `ffb84bee09ea` |
 
 How the code is written, and how changes get onto `main`, is described in
 [CONTRIBUTING.md](CONTRIBUTING.md).
