@@ -15,6 +15,8 @@ export interface SelectionSummary {
   readonly changeRatio: number
   /** Trades closed inside the selection: every point after its first. */
   readonly tradeCount: number
+  /** Fees and tax of the trades inside the selection. */
+  readonly costs: number
   /** Sell date of the trade at each end; null for the period's starting point. */
   readonly fromDate: string | null
   readonly toDate: string | null
@@ -45,9 +47,15 @@ export function summarizeSelection(
     change,
     changeRatio: change / startPoint.balance,
     tradeCount: toIndex - fromIndex,
+    costs: getCostsSoFar(endPoint) - getCostsSoFar(startPoint),
     fromDate: getSellDate(startPoint),
     toDate: getSellDate(endPoint),
   }
+}
+
+/** Fees and tax the period's trades cost up to this point. */
+function getCostsSoFar({ balance, grossBalance }: RangePoint): number {
+  return grossBalance - balance
 }
 
 function getSellDate({ closedResult }: RangePoint): string | null {

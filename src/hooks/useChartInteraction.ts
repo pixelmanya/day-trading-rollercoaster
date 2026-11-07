@@ -41,7 +41,7 @@ const keySteps: Readonly<Record<string, number>> = { ArrowLeft: -1, ArrowRight: 
 /**
  * Hover, touch and keyboard for the chart. Moving highlights the nearest point; pressing and
  * dragging selects a stretch (a tap only highlights); arrows step, Shift + arrows extend the
- * selection, Escape clears it.
+ * selection, Escape hides the tooltip and clears the selection.
  */
 export function useChartInteraction(points: readonly ChartPoint[]): ChartInteraction {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
@@ -114,7 +114,9 @@ function createKeyHandler(state: InteractionState): ChartInteraction['handleKeyD
   return (event) => {
     const step = keySteps[event.key]
 
+    // Content shown on hover or focus must be dismissible (WCAG 1.4.13)
     if (event.key === 'Escape') {
+      setHoveredIndex(null)
       setSelection(null)
     }
 

@@ -38,6 +38,22 @@ describe('summarizeSelection', () => {
     expect(summarizeSelection(points, { anchorIndex: 3, focusIndex: 1 })).toEqual(forward)
   })
 
+  test('counts the fees and tax of the trades inside it', () => {
+    const withFees = computeClosedResults(
+      [
+        sell(buy({ tradeId: 'a', fee: 1 }), { price: 3, fee: 1, date: '2026-03-05' }),
+        sell(buy({ tradeId: 'b', fee: 2 }), { price: 3, fee: 2, date: '2026-04-01' }),
+      ],
+      buildSettings({ taxRate: 0 }),
+      TODAY,
+    )
+
+    const series = computeRangeSeries(withFees, { start: 1000, range: 'ALL', today: TODAY })
+
+    expect(summarizeSelection(series.points, { anchorIndex: 0, focusIndex: 2 })?.costs).toBe(6)
+    expect(summarizeSelection(series.points, { anchorIndex: 1, focusIndex: 2 })?.costs).toBe(4)
+  })
+
   test('has no date for the period’s starting point', () => {
     expect(summarizeSelection(points, { anchorIndex: 0, focusIndex: 1 })).toMatchObject({
       fromDate: null,

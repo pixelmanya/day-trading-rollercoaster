@@ -9,6 +9,7 @@ import type { ChartRange } from '../lib/ranges'
 import { summarizeSelection } from '../lib/selection'
 import type { Summary } from '../lib/types'
 import { BalanceChart } from './BalanceChart'
+import { CostLegend } from './CostLegend'
 import { HeroDelta } from './HeroDelta'
 import { RangeSelector } from './RangeSelector'
 
@@ -40,6 +41,7 @@ export function Hero({ summary: { balance, closedResults }, start, today }: Hero
 
   const geometry = computeChartGeometry(
     series.points.map(({ balance: pointBalance }) => pointBalance),
+    series.points.map(({ grossBalance }) => grossBalance),
     series.startBalance,
   )
 
@@ -73,6 +75,9 @@ export function Hero({ summary: { balance, closedResults }, start, today }: Hero
         interaction={interaction}
         selected={selected}
       />
+      {series.points.length > 1 ? (
+        <CostLegend costs={series.costs} costShare={series.costShare} />
+      ) : null}
       <ChartNote
         hasAnyTrades={closedResults.length > 0}
         hasTradesInRange={series.points.length > 1}
