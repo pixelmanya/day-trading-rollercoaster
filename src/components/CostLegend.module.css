@@ -1,0 +1,41 @@
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6) var(--space-16);
+  margin-block-start: var(--space-10);
+  font-size: var(--text-12-5);
+  color: var(--muted);
+  animation: fade-in var(--duration-base) var(--ease-out);
+}
+
+.entry {
+  display: inline-flex;
+  gap: var(--space-6);
+  align-items: center;
+}
+
+/* Matches the chart's dashed gross line */
+.grossSwatch {
+  inline-size: var(--space-14);
+  border-block-start: var(--hairline) dashed var(--muted);
+}
+
+/* Matches the shaded gap between the lines */
+.costSwatch {
+  inline-size: var(--space-10);
+  block-size: var(--space-10);
+  background: var(--loss-soft);
+  border: var(--hairline) solid var(--loss);
+  border-radius: var(--radius-2);
+}
+
+.amount {
+  font-weight: var(--weight-semibold);
+  color: var(--loss);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}

@@ -8,6 +8,7 @@ import {
   formatShortDate,
   formatSignedEuro,
   formatWholeEuro,
+  formatShare,
   formatWinRate,
   getToday,
 } from './format'
@@ -39,6 +40,13 @@ describe('formatSignedEuro', () => {
   test('uses a plus for gains and a true minus for losses', () => {
     expect(formatSignedEuro(12)).toBe(`+12,00${EURO}`)
     expect(formatSignedEuro(-12)).toBe(`−12,00${EURO}`)
+  })
+})
+
+describe('formatShare', () => {
+  test('rounds to a whole percentage without a sign', () => {
+    expect(formatShare(0.496)).toBe('50 %')
+    expect(formatShare(1.2)).toBe('120 %')
   })
 })
 

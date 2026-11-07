@@ -57,8 +57,33 @@ describe('computeRangeSeries', () => {
       today: TODAY,
     })
 
-    expect(series.points).toEqual([{ balance: 1200, closedResult: null }])
+    expect(series.points).toEqual([{ balance: 1200, grossBalance: 1200, closedResult: null }])
     expect(series.change).toBe(0)
+    expect(series.costShare).toBeNull()
+  })
+
+  test('tracks the balance before fees and tax, and what they cost in the range', () => {
+    // Both +200 € gross. First: 4 € fees, 196 € pretax, 24 € tax (25 % above the 100 €
+    // allowance), 172 € net. Second: 2 € fees, 198 € pretax, 49,50 € more tax, 148,50 € net
+    const costly = computeClosedResults(
+      [
+        sell(buy({ tradeId: 'first', fee: 2 }), { price: 3, fee: 2, date: '2026-01-10' }),
+        sell(buy({ tradeId: 'second', fee: 1 }), { price: 3, fee: 1, date: '2026-11-01' }),
+      ],
+      buildSettings({ start: 1000 }),
+      TODAY,
+    )
+
+    const all = computeRangeSeries(costly, { start: 1000, range: 'ALL', today: TODAY })
+    const week = computeRangeSeries(costly, { start: 1000, range: '1W', today: TODAY })
+
+    expect(all.points.map(({ balance }) => balance)).toEqual([1000, 1172, 1320.5])
+    expect(all.points.map(({ grossBalance }) => grossBalance)).toEqual([1000, 1200, 1400])
+    expect(all.costs).toBe(79.5)
+    expect(all.costShare).toBeCloseTo(79.5 / 400, 6)
+    // A shorter range starts both lines at its starting balance and counts only its own costs
+    expect(week.points.map(({ grossBalance }) => grossBalance)).toEqual([1172, 1372])
+    expect(week.costs).toBe(51.5)
   })
 
   test('counts a closed trade without a sell date as closed today', () => {
