@@ -1,6 +1,6 @@
 /*
  * Calendar arithmetic on ISO dates (YYYY-MM-DD). Everything runs in UTC, so time zones and
- * daylight saving never shift a date.
+ * daylight saving never shift a date; toZonedIsoDate is the one place a time zone applies.
  */
 
 const MONTHS_PER_YEAR = 12
@@ -12,6 +12,22 @@ export function toIsoDate(date: Date): string {
   const day = String(date.getUTCDate()).padStart(2, '0')
 
   return `${year}-${month}-${day}`
+}
+
+/**
+ * The calendar date of an ISO timestamp in `timeZone`:
+ * ("2026-11-06T23:30:00Z", "Europe/Berlin") → "2026-11-07".
+ */
+export function toZonedIsoDate(timestamp: string, timeZone: string): string {
+  // en-CA formats dates as YYYY-MM-DD
+  const format = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+
+  return format.format(new Date(timestamp))
 }
 
 /** `isoDate` moved by `days` (negative moves back): ("2026-03-01", -1) → "2026-02-28". */
