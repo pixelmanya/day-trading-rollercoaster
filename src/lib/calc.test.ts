@@ -5,6 +5,7 @@ import {
   computeBalanceSeries,
   computeClosedResults,
   computePositionCost,
+  computePricePerShare,
   computeSellPretax,
   computeYearTax,
   findTrade,
@@ -205,5 +206,11 @@ describe('summarize', () => {
     expect(summary.fees).toBe(4)
     expect(summary.tax).toBeCloseTo(0, 6)
     expect(summary.openPositions).toEqual([{ trade: held, cost: 52 }])
+  })
+})
+
+describe('computePricePerShare', () => {
+  test('divides the amount, fees included, by the shares', () => {
+    expect(computePricePerShare(994.72, 8)).toBe(124.34)
   })
 })

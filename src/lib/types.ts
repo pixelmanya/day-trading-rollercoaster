@@ -105,5 +105,22 @@ export interface Summary {
   readonly tax: number
 }
 
+/** One executed buy or sell as a broker reports it. Amounts in €. */
+export interface BrokerTransaction {
+  /** The broker's ID, stable across exports; trades made from it reuse it. */
+  readonly transactionId: string
+  readonly isin: string
+  /** Shown in place of a ticker, e.g. "KLA Corp". */
+  readonly name: string
+  readonly side: 'buy' | 'sell'
+  readonly shares: number
+  /** Cash that moved, fees included, as a positive amount: paid for a buy, received for a sell. */
+  readonly amount: number
+  /** Local date, YYYY-MM-DD. */
+  readonly date: string
+  /** ISO timestamp of the execution; orders transactions within a day. */
+  readonly executedAt: string
+}
+
 /** Whether an amount reads as a gain or a loss. */
 export type Tone = 'gain' | 'loss'
