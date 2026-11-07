@@ -15,16 +15,22 @@ const POSTGRES_URL = /^postgres(ql)?:\/\/\S+$/
 /**
  * Validate the environment into a ServerConfig. Errors name the variable and what is wrong,
  * never its value, so they are safe to log.
+ *
+ * Render PR previews (IS_PULL_REQUEST=true) read PREVIEW_DATABASE_URL and never fall back to
+ * DATABASE_URL, so a preview can't reach production data.
  */
 export function parseServerConfig(environment: ServerEnvironment): Result<ServerConfig, string> {
-  const databaseUrl = environment['DATABASE_URL']
+  const variable =
+    environment['IS_PULL_REQUEST'] === 'true' ? 'PREVIEW_DATABASE_URL' : 'DATABASE_URL'
+
+  const databaseUrl = environment[variable]
 
   if (databaseUrl === undefined || databaseUrl === '') {
-    return fail('DATABASE_URL is not set. See .env.example.')
+    return fail(`${variable} is not set. See .env.example.`)
   }
 
   if (!POSTGRES_URL.test(databaseUrl)) {
-    return fail('DATABASE_URL must be a postgres:// or postgresql:// connection string.')
+    return fail(`${variable} must be a postgres:// or postgresql:// connection string.`)
   }
 
   return succeed({ databaseUrl })

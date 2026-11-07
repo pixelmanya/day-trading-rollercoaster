@@ -20,7 +20,9 @@ services:
     envVars:
       - key: NODE_VERSION
         value: '22'
-      # Secret: set in the dashboard, never here. Previews need their own database (a separate
-      # Neon branch), never production's
+      # Secret: set in the dashboard, never here. sync: false keeps it out of PR previews
       - key: DATABASE_URL
         sync: false
+      # PREVIEW_DATABASE_URL (the Neon "preview" branch), created in the dashboard as an
+      # environment group; previews use it instead of DATABASE_URL
+      - fromGroup: preview-database
