@@ -604,15 +604,70 @@ Rules that keep it that way:
 
 ## Accessibility
 
-- Actions are `<button>`s, navigation is `<a>`. No clickable `<div>`s.
+Accessibility is a requirement, not polish: a feature that some people can't use isn't done. The
+target is **WCAG 2.2 level AA** in both themes, on phone and desktop. Reviews check it like
+correctness.
+
+### Semantics
+
+- Use the native element first: actions are `<button>`s, navigation is `<a>`, groups of options
+  are a `<fieldset>` with a `<legend>`, label–value pairs are a `<dl>`. No clickable `<div>`s.
+- ARIA only where no native element fits (the chart is a `role="slider"`). Every such exception
+  carries a lint-disable comment saying why.
+- Landmarks and regions have names (`<section aria-label="Balance">`); headings follow the
+  page's outline without skipping levels.
+
+### Names and labels
+
 - Icons never stand alone: every icon sits next to a visible text label (`⚙ Settings`, `✎ Edit`).
   Icons are `aria-hidden`; if a button needs a more specific accessible name (`Edit RHM`), it
   must contain the visible label.
 - Every input has a visible `<label>`. Numeric inputs use `inputMode="decimal"` and accept both
   `0,91` and `0.91`.
-- Keep the visible `:focus-visible` outline. Dialogs move focus to their first field.
-- Charts that carry information get `role="img"` and an `aria-label`; decorative ones get
-  `aria-hidden`.
+- Graphics explain themselves in text: a chart has a legend naming each line and area, and the
+  numbers it shows also appear as text (the header, the legend, the tooltip).
+
+### Keyboard and focus
+
+- Everything a pointer can do, the keyboard can do too. The chart: arrows step through trades,
+  Shift + arrows select a stretch, Escape dismisses the tooltip and clears the selection.
+- Keep the visible `:focus-visible` outline. Focus order follows reading order; no positive
+  `tabIndex`.
+- Dialogs move focus to their first field, keep it inside while open, close on Escape, and return
+  focus to the button that opened them.
+
+### Colour and contrast
+
+- Never colour alone: gains and losses also carry a sign (`+12,00 €`, `−4,45 €`), and chart
+  lines differ in style (solid or dashed) as well as colour.
+- Contrast at least **4.5:1** for text and **3:1** for icons, chart lines, focus rings and
+  control borders, against both `--bg` and `--surface`, in light and dark mode. New colour
+  tokens are checked in both themes before they land.
+
+### Content on hover or focus
+
+- Tooltips appear on focus as well as on hover, stay while the pointer is over them, and are
+  dismissible with Escape (WCAG 1.4.13). On touch they stay until the user taps elsewhere.
+- Content that changes without a page load is announced: `aria-live="polite"` for status (a
+  selected stretch's summary), `role="alert"` for errors ("Couldn’t save").
+- Interactive charts expose their current point as `aria-valuetext` ("25.04. SAP +33,74 €,
+  fees 2,00 €, tax 0,00 €, balance 1.046,40 €"); static charts get `role="img"` and an
+  `aria-label`; decorative graphics get `aria-hidden`.
+
+### Size, zoom and motion
+
+- Pointer targets are at least **24 × 24 px** (`--target-min`); primary actions aim for 44 px.
+- The layout works at 320 px wide and at 200 % text zoom without horizontal scrolling. Type is
+  in `rem` so it follows the user's font size.
+- Motion respects `prefers-reduced-motion` (one global rule), and nothing is conveyed by
+  animation alone.
+
+### Testing
+
+- Component tests find elements by role and accessible name (`getByRole`, `getByLabelText`),
+  which fails when a name goes missing. Every interactive feature gets a keyboard-only test.
+- New widgets are tried with the keyboard alone and with a screen reader (VoiceOver or NVDA)
+  before review. The PR's test plan says so.
 
 ## Errors
 
