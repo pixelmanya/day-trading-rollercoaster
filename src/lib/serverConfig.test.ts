@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { parseServerConfig } from './serverConfig'
+import { checkDatabaseOwner, parseServerConfig } from './serverConfig'
 
 describe('parseServerConfig', () => {
   test('reads the database connection string', () => {
@@ -8,7 +8,7 @@ describe('parseServerConfig', () => {
 
     expect(parseServerConfig({ DATABASE_URL: databaseUrl })).toEqual({
       isSuccess: true,
-      output: { databaseUrl, databaseHost: 'example.neon.tech' },
+      output: { deployment: 'development', databaseUrl, databaseHost: 'example.neon.tech' },
     })
   })
 
@@ -24,7 +24,7 @@ describe('parseServerConfig', () => {
       }),
     ).toEqual({
       isSuccess: true,
-      output: { databaseUrl: preview, databaseHost: 'preview.neon.tech' },
+      output: { deployment: 'preview', databaseUrl: preview, databaseHost: 'preview.neon.tech' },
     })
 
     expect(parseServerConfig({ IS_PULL_REQUEST: 'true', DATABASE_URL: production })).toEqual({
@@ -44,5 +44,45 @@ describe('parseServerConfig', () => {
 
     expect(parsed.isSuccess ? '' : parsed.error).toMatch(message)
     expect(parsed.isSuccess ? '' : parsed.error).not.toMatch(/mysql:\/\/x/)
+  })
+})
+
+describe('deployments', () => {
+  const databaseUrl = 'postgresql://user:secret@example.neon.tech/log'
+
+  test('are production on Render, preview for Render PR previews, else development', () => {
+    const getDeployment = (environment: Readonly<Record<string, string>>) => {
+      const parsed = parseServerConfig({ DATABASE_URL: databaseUrl, ...environment })
+
+      return parsed.isSuccess ? parsed.output.deployment : null
+    }
+
+    expect(getDeployment({ RENDER: 'true' })).toBe('production')
+
+    expect(
+      getDeployment({ RENDER: 'true', IS_PULL_REQUEST: 'true', PREVIEW_DATABASE_URL: databaseUrl }),
+    ).toBe('preview')
+
+    expect(getDeployment({})).toBe('development')
+  })
+})
+
+describe('checkDatabaseOwner', () => {
+  test('keeps the production and preview databases to their own deployment', () => {
+    expect(checkDatabaseOwner('a37255697dd9', 'production').isSuccess).toBe(true)
+    expect(checkDatabaseOwner('66b6c6392f90', 'preview').isSuccess).toBe(true)
+
+    expect(checkDatabaseOwner('a37255697dd9', 'development')).toEqual({
+      isSuccess: false,
+      error:
+        'This development server is set up with the production database. Use its own (README → Environments).',
+    })
+
+    expect(checkDatabaseOwner('a37255697dd9', 'preview').isSuccess).toBe(false)
+    expect(checkDatabaseOwner('66b6c6392f90', 'development').isSuccess).toBe(false)
+  })
+
+  test('allows development databases anywhere', () => {
+    expect(checkDatabaseOwner('49960de5880e', 'development').isSuccess).toBe(true)
   })
 })

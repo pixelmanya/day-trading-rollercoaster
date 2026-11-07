@@ -5,9 +5,9 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 
-import { mapSuccess } from '../lib/result'
+import { chainSuccess, mapSuccess } from '../lib/result'
 import type { Result } from '../lib/result'
-import { parseServerConfig } from '../lib/serverConfig'
+import { checkDatabaseOwner, parseServerConfig } from '../lib/serverConfig'
 
 export type Database = NodePgDatabase
 
@@ -28,18 +28,23 @@ const FINGERPRINT_LENGTH = 12
  * app still serves guest mode without a database; database work then gets the config error,
  * and /api/health reports it.
  */
-const connection: Result<DatabaseConnection, string> = mapSuccess(
+const connection: Result<DatabaseConnection, string> = chainSuccess(
   parseServerConfig(process.env),
-  ({ databaseUrl, databaseHost }) => ({
-    database: drizzle(new Pool({ connectionString: databaseUrl, max: 5 })),
-    fingerprint: createHash('sha256')
-      .update(databaseHost)
-      .digest('hex')
-      .slice(0, FINGERPRINT_LENGTH),
-  }),
+  ({ deployment, databaseUrl, databaseHost }) => {
+    const fingerprint = createFingerprint(databaseHost)
+
+    return mapSuccess(checkDatabaseOwner(fingerprint, deployment), () => ({
+      database: drizzle(new Pool({ connectionString: databaseUrl, max: 5 })),
+      fingerprint,
+    }))
+  },
 )
 
 /** The database, or why there is none (safe to log: it never contains the secret). */
 export function getDatabase(): Result<DatabaseConnection, string> {
   return connection
+}
+
+function createFingerprint(databaseHost: string): string {
+  return createHash('sha256').update(databaseHost).digest('hex').slice(0, FINGERPRINT_LENGTH)
 }
